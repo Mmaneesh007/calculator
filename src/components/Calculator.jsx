@@ -1,17 +1,21 @@
 import { useState, useEffect } from 'react';
 
-const Calculator = ({ isPremium, onEqualPress, pendingCalculation }) => {
+const Calculator = ({ isPremium, onEqualPress, pendingCalculation, singleUnlockTrigger, onSingleUnlockConsumed }) => {
   const [display, setDisplay] = useState('0');
   const [expression, setExpression] = useState('');
   const [isNewInput, setIsNewInput] = useState(true);
   const [isHiddenMode, setIsHiddenMode] = useState(false);
 
   useEffect(() => {
-    if (isPremium && isHiddenMode && pendingCalculation !== null) {
+    if (singleUnlockTrigger && isHiddenMode && pendingCalculation !== null) {
+      setDisplay(String(pendingCalculation));
+      setIsHiddenMode(false);
+      onSingleUnlockConsumed();
+    } else if (isPremium && isHiddenMode && pendingCalculation !== null) {
       setDisplay(String(pendingCalculation));
       setIsHiddenMode(false);
     }
-  }, [isPremium, isHiddenMode, pendingCalculation]);
+  }, [isPremium, isHiddenMode, pendingCalculation, singleUnlockTrigger, onSingleUnlockConsumed]);
 
   const handleNumber = (num) => {
     if (isNewInput) {

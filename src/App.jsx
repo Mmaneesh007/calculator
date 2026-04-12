@@ -6,6 +6,7 @@ function App() {
   const [isPremium, setIsPremium] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
   const [pendingCalculation, setPendingCalculation] = useState(null);
+  const [singleUnlockTrigger, setSingleUnlockTrigger] = useState(false);
 
   const handleEqualPress = (result) => {
     if (!isPremium) {
@@ -16,10 +17,13 @@ function App() {
     return true; // Premium user, show result
   };
 
-  const handlePaymentSuccess = () => {
-    setIsPremium(true);
+  const handlePaymentSuccess = (planType) => {
+    if (planType === 'premium') {
+      setIsPremium(true);
+    } else {
+      setSingleUnlockTrigger(true);
+    }
     setShowPaywall(false);
-    // Note: The calculator component handles applying the pending calculation when isPremium changes
   };
 
   return (
@@ -28,6 +32,8 @@ function App() {
         isPremium={isPremium} 
         onEqualPress={handleEqualPress} 
         pendingCalculation={pendingCalculation}
+        singleUnlockTrigger={singleUnlockTrigger}
+        onSingleUnlockConsumed={() => setSingleUnlockTrigger(false)}
       />
       
       {showPaywall && (
