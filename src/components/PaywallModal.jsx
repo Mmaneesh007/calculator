@@ -6,12 +6,27 @@ const PaywallModal = ({ onClose, onPay }) => {
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [isProcessing, setIsProcessing] = useState(false);
 
+  const [cardNumber, setCardNumber] = useState('');
+  const [expiry, setExpiry] = useState('');
+  const [cvv, setCvv] = useState('');
+  const [upiId, setUpiId] = useState('');
+
   const handlePlanSelect = (plan) => {
     setSelectedPlan(plan);
     setStep(3);
   };
 
   const handleProcessPayment = () => {
+    // For realism, let's make sure they typed something before submitting
+    if (paymentMethod === 'card' && (!cardNumber || !expiry || !cvv)) {
+      alert("Please fill out all card details to continue.");
+      return;
+    }
+    if (paymentMethod === 'upi' && !upiId) {
+      alert("Please enter a valid UPI ID.");
+      return;
+    }
+
     setIsProcessing(true);
     // Simulate payment processing delay (1.5 seconds)
     setTimeout(() => {
@@ -102,19 +117,44 @@ const PaywallModal = ({ onClose, onPay }) => {
               <div className="payment-form">
                 <div className="input-group">
                   <label>Card Number</label>
-                  <div className="fake-input">
+                  <div className="input-wrapper">
                     <span>💳</span>
-                    <span>•••• •••• •••• 4242</span>
+                    <input 
+                      type="text" 
+                      className="payment-input" 
+                      placeholder="0000 0000 0000 0000" 
+                      maxLength="19"
+                      value={cardNumber}
+                      onChange={(e) => setCardNumber(e.target.value)}
+                    />
                   </div>
                 </div>
                 <div className="input-row">
                   <div className="input-group">
                     <label>Expiry</label>
-                    <div className="fake-input">12/26</div>
+                    <div className="input-wrapper">
+                      <input 
+                        type="text" 
+                        className="payment-input" 
+                        placeholder="MM/YY" 
+                        maxLength="5"
+                        value={expiry}
+                        onChange={(e) => setExpiry(e.target.value)}
+                      />
+                    </div>
                   </div>
                   <div className="input-group">
                     <label>CVV</label>
-                    <div className="fake-input">•••</div>
+                    <div className="input-wrapper">
+                      <input 
+                        type="password" 
+                        className="payment-input" 
+                        placeholder="•••" 
+                        maxLength="4"
+                        value={cvv}
+                        onChange={(e) => setCvv(e.target.value)}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -122,9 +162,15 @@ const PaywallModal = ({ onClose, onPay }) => {
               <div className="payment-form upi-form">
                 <div className="input-group">
                   <label>Enter UPI ID</label>
-                  <div className="fake-input">
+                  <div className="input-wrapper">
                     <span>📱</span>
-                    <span>username@payprovider</span>
+                    <input 
+                      type="text" 
+                      className="payment-input" 
+                      placeholder="username@upi"
+                      value={upiId}
+                      onChange={(e) => setUpiId(e.target.value)}
+                    />
                   </div>
                 </div>
                 <div className="upi-qr-placeholder">
