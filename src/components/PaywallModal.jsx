@@ -175,7 +175,16 @@ const PaywallModal = ({ onClose, onPay }) => {
                 </div>
                 <div className="upi-qr-placeholder">
                   <div className="qr-box">
-                    <div className="qr-inner">Scan QR<br/>to Pay</div>
+                    <img 
+                      src="/qr.png" 
+                      alt="UPI QR Code" 
+                      style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '8px' }} 
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.nextElementSibling.style.display = 'flex';
+                      }}
+                    />
+                    <div className="qr-inner" style={{ display: 'none' }}>Save image to public/qr.png</div>
                   </div>
                 </div>
               </div>
