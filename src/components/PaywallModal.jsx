@@ -3,6 +3,7 @@ import { useState } from 'react';
 const PaywallModal = ({ onClose, onPay }) => {
   const [step, setStep] = useState(1);
   const [selectedPlan, setSelectedPlan] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState('card');
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handlePlanSelect = (plan) => {
@@ -78,36 +79,68 @@ const PaywallModal = ({ onClose, onPay }) => {
           <>
             <div className="modal-icon">🔒</div>
             <h2 className="modal-title">Secure Checkout</h2>
-            <p className="modal-description">
+            <p className="modal-description" style={{ marginBottom: '16px' }}>
               {selectedPlan === 'premium' ? 'Premium Plan - ₹999/month' : 'Basic Plan - ₹499/month'}
             </p>
-            
-            <div className="payment-form">
-              <div className="input-group">
-                <label>Card Number</label>
-                <div className="fake-input">
-                  <span>💳</span>
-                  <span>•••• •••• •••• 4242</span>
-                </div>
-              </div>
-              <div className="input-row">
-                <div className="input-group">
-                  <label>Expiry</label>
-                  <div className="fake-input">12/26</div>
-                </div>
-                <div className="input-group">
-                  <label>CVV</label>
-                  <div className="fake-input">•••</div>
-                </div>
-              </div>
+
+            <div className="payment-method-selector">
+              <button 
+                className={`method-btn ${paymentMethod === 'card' ? 'active' : ''}`}
+                onClick={() => setPaymentMethod('card')}
+              >
+                <span>💳</span> Card
+              </button>
+              <button 
+                className={`method-btn ${paymentMethod === 'upi' ? 'active' : ''}`}
+                onClick={() => setPaymentMethod('upi')}
+              >
+                <span>📱</span> UPI
+              </button>
             </div>
+            
+            {paymentMethod === 'card' ? (
+              <div className="payment-form">
+                <div className="input-group">
+                  <label>Card Number</label>
+                  <div className="fake-input">
+                    <span>💳</span>
+                    <span>•••• •••• •••• 4242</span>
+                  </div>
+                </div>
+                <div className="input-row">
+                  <div className="input-group">
+                    <label>Expiry</label>
+                    <div className="fake-input">12/26</div>
+                  </div>
+                  <div className="input-group">
+                    <label>CVV</label>
+                    <div className="fake-input">•••</div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="payment-form upi-form">
+                <div className="input-group">
+                  <label>Enter UPI ID</label>
+                  <div className="fake-input">
+                    <span>📱</span>
+                    <span>username@payprovider</span>
+                  </div>
+                </div>
+                <div className="upi-qr-placeholder">
+                  <div className="qr-box">
+                    <div className="qr-inner">Scan QR<br/>to Pay</div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <button 
               className={`pay-btn ${isProcessing ? 'processing' : ''}`} 
               onClick={handleProcessPayment}
               disabled={isProcessing}
             >
-              {isProcessing ? 'Processing Transaction...' : 'Pay Securely'}
+              {isProcessing ? 'Processing Transaction...' : `Pay via ${paymentMethod === 'card' ? 'Card' : 'UPI'}`}
             </button>
           </>
         )}
