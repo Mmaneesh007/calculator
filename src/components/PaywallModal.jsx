@@ -22,10 +22,8 @@ const PaywallModal = ({ onClose, onPay }) => {
       alert("Please fill out all card details to continue.");
       return;
     }
-    if (paymentMethod === 'upi' && !upiId) {
-      alert("Please enter a valid UPI ID.");
-      return;
-    }
+    // If they are paying via UPI, we don't strictly require the UPI ID 
+    // because they could be scanning the QR code directly!
 
     setIsProcessing(true);
     // Simulate payment processing delay (1.5 seconds)
