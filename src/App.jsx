@@ -1,40 +1,51 @@
+// src/App.jsx
 import { useState } from 'react';
+import './App.css';
+import Sidebar from './components/Sidebar';
 import Calculator from './components/Calculator';
+import DeveloperCalculator from './components/DeveloperCalculator';
+import ConstructionCalculator from './components/ConstructionCalculator';
+import FinanceCalculator from './components/FinanceCalculator';
 import PaywallModal from './components/PaywallModal';
 
 function App() {
   const [isPremium, setIsPremium] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
-  const [pendingCalculation, setPendingCalculation] = useState(null);
-  const [singleUnlockTrigger, setSingleUnlockTrigger] = useState(false);
-
-  const handleEqualPress = (result) => {
-    if (!isPremium) {
-      setPendingCalculation(result);
-      setShowPaywall(true);
-      return false; // Tells calculator not to show result yet
-    }
-    return true; // Premium user, show result
-  };
+  const [activeMode, setActiveMode] = useState('basic');
 
   const handlePaymentSuccess = (planType) => {
-    if (planType === 'premium') {
+    if (planType === 'premium' || planType === 'basic') {
       setIsPremium(true);
-    } else {
-      setSingleUnlockTrigger(true);
     }
     setShowPaywall(false);
   };
 
+  const renderActiveCalculator = () => {
+    switch (activeMode) {
+      case 'developer':
+        return <DeveloperCalculator />;
+      case 'construction':
+        return <ConstructionCalculator />;
+      case 'finance':
+        return <FinanceCalculator />;
+      case 'basic':
+      default:
+        return <Calculator />;
+    }
+  };
+
   return (
-    <div className="app-main">
-      <Calculator 
-        isPremium={isPremium} 
-        onEqualPress={handleEqualPress} 
-        pendingCalculation={pendingCalculation}
-        singleUnlockTrigger={singleUnlockTrigger}
-        onSingleUnlockConsumed={() => setSingleUnlockTrigger(false)}
+    <div className="layout-with-sidebar">
+      <Sidebar 
+        activeMode={activeMode} 
+        setActiveMode={setActiveMode} 
+        isPremium={isPremium}
+        onPremiumClick={() => setShowPaywall(true)}
       />
+      
+      <div className="main-content">
+        {renderActiveCalculator()}
+      </div>
       
       {showPaywall && (
         <PaywallModal 

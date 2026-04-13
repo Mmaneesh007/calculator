@@ -1,21 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
-const Calculator = ({ isPremium, onEqualPress, pendingCalculation, singleUnlockTrigger, onSingleUnlockConsumed }) => {
+const Calculator = () => {
   const [display, setDisplay] = useState('0');
   const [expression, setExpression] = useState('');
   const [isNewInput, setIsNewInput] = useState(true);
-  const [isHiddenMode, setIsHiddenMode] = useState(false);
-
-  useEffect(() => {
-    if (singleUnlockTrigger && isHiddenMode && pendingCalculation !== null) {
-      setDisplay(String(pendingCalculation));
-      setIsHiddenMode(false);
-      onSingleUnlockConsumed();
-    } else if (isPremium && isHiddenMode && pendingCalculation !== null) {
-      setDisplay(String(pendingCalculation));
-      setIsHiddenMode(false);
-    }
-  }, [isPremium, isHiddenMode, pendingCalculation, singleUnlockTrigger, onSingleUnlockConsumed]);
 
   const handleNumber = (num) => {
     if (isNewInput) {
@@ -24,7 +12,6 @@ const Calculator = ({ isPremium, onEqualPress, pendingCalculation, singleUnlockT
     } else {
       setDisplay(display === '0' ? num : display + num);
     }
-    if (isHiddenMode) setIsHiddenMode(false);
   };
 
   const handleOperator = (op) => {
@@ -33,7 +20,6 @@ const Calculator = ({ isPremium, onEqualPress, pendingCalculation, singleUnlockT
     }
     setExpression(display + ' ' + op);
     setIsNewInput(true);
-    if (isHiddenMode) setIsHiddenMode(false);
   };
 
   const calculateInternally = () => {
@@ -62,31 +48,23 @@ const Calculator = ({ isPremium, onEqualPress, pendingCalculation, singleUnlockT
     
     setExpression(expression + ' ' + display + ' =');
     setIsNewInput(true);
-
-    const canShow = onEqualPress(res);
-    if (canShow) {
-      setDisplay(String(res));
-    } else {
-      setIsHiddenMode(true);
-    }
+    setDisplay(String(res));
   };
 
   const clear = () => {
     setDisplay('0');
     setExpression('');
     setIsNewInput(true);
-    setIsHiddenMode(false);
   };
 
   return (
     <div className="calculator-wrapper">
       <div className="calculator-container">
-        {isPremium && <div className="premium-badge">PRO</div>}
         
         <div className="display">
           <div className="expression">{expression}</div>
-          <div className={`result ${isHiddenMode ? 'blurred' : ''}`}>
-            {isHiddenMode ? '???' : display}
+          <div className="result">
+            {display}
           </div>
         </div>
 
@@ -117,4 +95,5 @@ const Calculator = ({ isPremium, onEqualPress, pendingCalculation, singleUnlockT
     </div>
   );
 };
+
 export default Calculator;
