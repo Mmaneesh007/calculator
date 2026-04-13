@@ -1,5 +1,5 @@
 // src/components/Sidebar.jsx
-import { Calculator, HardHat, Code, TrendingUp, Lock } from 'lucide-react';
+import { Calculator, HardHat, Code, TrendingUp, Lock, Database } from 'lucide-react';
 
 const Sidebar = ({ activeMode, setActiveMode, isPremium, onPremiumClick }) => {
   const navItems = [
@@ -7,6 +7,7 @@ const Sidebar = ({ activeMode, setActiveMode, isPremium, onPremiumClick }) => {
     { id: 'developer', label: 'Developer Mode', icon: Code, isPro: true },
     { id: 'construction', label: 'BOM Estimator', icon: HardHat, isPro: true },
     { id: 'finance', label: 'Wealth Planner', icon: TrendingUp, isPro: true },
+    { id: 'minibi', label: 'Data Studio', icon: Database, isPro: true },
   ];
 
   const handleNavClick = (item) => {

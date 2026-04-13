@@ -6,6 +6,7 @@ import Calculator from './components/Calculator';
 import DeveloperCalculator from './components/DeveloperCalculator';
 import ConstructionCalculator from './components/ConstructionCalculator';
 import FinanceCalculator from './components/FinanceCalculator';
+import MiniBI from './components/MiniBI';
 import PaywallModal from './components/PaywallModal';
 
 function App() {
@@ -28,6 +29,8 @@ function App() {
         return <ConstructionCalculator />;
       case 'finance':
         return <FinanceCalculator />;
+      case 'minibi':
+        return <MiniBI />;
       case 'basic':
       default:
         return <Calculator />;
