@@ -94,8 +94,8 @@ const FinancialReport = ({ data, columns, config, onConfigChange }) => {
   const segmentTable = useMemo(() => {
     if (!categoryCol || !periodCol || !valueCol) return { categories: [], periods: [], matrix: {} };
 
-    const categories = [...new Set(data.map(r => String(r[categoryCol] || 'Other')))].slice(0, 20);
-    const periods = [...new Set(data.map(r => String(r[periodCol] || 'Other')))].slice(0, 8);
+    const categories = [...new Set(data.map(r => String(r[categoryCol] || 'Other')))].slice(0, 100);
+    const periods = [...new Set(data.map(r => String(r[periodCol] || 'Other')))].slice(0, 50);
 
     const matrix = {};
     categories.forEach(cat => {
