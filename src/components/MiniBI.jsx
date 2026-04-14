@@ -57,6 +57,7 @@ const MiniBI = () => {
   const [lastSavedState, setLastSavedState] = useState(null);
   const [syncStatus, setSyncStatus] = useState('synced'); // 'synced' | 'saving' | 'error'
   const [showActivityLog, setShowActivityLog] = useState(false);
+  const [reportConfig, setReportConfig] = useState(null);
 
   // Load saved dashboards or shared links on mount
   useEffect(() => {
@@ -95,7 +96,7 @@ const MiniBI = () => {
 
   // Phase 5: Auto-Save Engine (Debounced)
   useEffect(() => {
-    if (!currentDashboardId || !user) return;
+    if (!user || data.length === 0) return;
 
     const currentState = JSON.stringify({
       name: dashboardName,
@@ -106,10 +107,11 @@ const MiniBI = () => {
       daxHistory,
       xAxisCol,
       yAxisCol,
-      chartType
+      chartType,
+      reportConfig
     });
 
-    // Don't save if it matches the last known cloud state
+    // Phase 8: Don't save if it matches the last known cloud state
     if (currentState === lastSavedState) return;
 
     setSyncStatus('saving');
@@ -126,9 +128,17 @@ const MiniBI = () => {
           xAxisCol,
           yAxisCol,
           chartType,
+          reportConfig,
           userName: user.displayName || user.email
         };
-        await saveDashboard(user.uid, config);
+        
+        // If no ID but we have a user and data, create initial record
+        const id = await saveDashboard(user.uid, config);
+        if (!currentDashboardId) {
+          setCurrentDashboardId(id);
+          await loadUserDashboards();
+        }
+        
         setLastSavedState(currentState);
         setSyncStatus('synced');
       } catch (err) {
@@ -138,7 +148,7 @@ const MiniBI = () => {
     }, 2000); // 2-second debounce
 
     return () => clearTimeout(timer);
-  }, [currentDashboardId, user, dashboardName, data, columns, activeTab, filters, daxHistory, xAxisCol, yAxisCol, chartType, lastSavedState]);
+  }, [currentDashboardId, user, dashboardName, data, columns, activeTab, filters, daxHistory, xAxisCol, yAxisCol, chartType, reportConfig, lastSavedState]);
 
   const handleLoadSharedLink = async (id) => {
     try {
@@ -188,6 +198,7 @@ const MiniBI = () => {
         xAxisCol,
         yAxisCol,
         chartType,
+        reportConfig,
       };
       
       const id = await saveDashboard(user.uid, config);
@@ -213,6 +224,7 @@ const MiniBI = () => {
     setXAxisCol(db.xAxisCol || '');
     setYAxisCol(db.yAxisCol || '');
     setChartType(db.chartType || 'bar');
+    setReportConfig(db.reportConfig || null);
     setStep(2);
   };
 
@@ -231,6 +243,7 @@ const MiniBI = () => {
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    setDashboardName(file.name.replace(/\.[^/.]+$/, "")); // Set name from file
     const reader = new FileReader();
     reader.onload = (evt) => {
       try {
@@ -549,7 +562,14 @@ const MiniBI = () => {
       {activeTab === 'query' && renderPowerQuery()}
       {activeTab === 'dax' && renderDAX()}
       {activeTab === 'visualize' && renderVisualize()}
-      {activeTab === 'report' && <FinancialReport data={filteredData} columns={columns} />}
+      {activeTab === 'report' && (
+        <FinancialReport 
+          data={filteredData} 
+          columns={columns} 
+          config={reportConfig} 
+          onConfigChange={setReportConfig} 
+        />
+      )}
     </div>
   );
 

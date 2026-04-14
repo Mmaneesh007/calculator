@@ -1,5 +1,5 @@
 // src/components/FinancialReport.jsx
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState, useEffect } from 'react';
 import { BarChart, Bar, PieChart, Pie, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid, Legend } from 'recharts';
 import { Download, FileText, Image } from 'lucide-react';
 import html2canvas from 'html2canvas';
@@ -7,13 +7,37 @@ import jsPDF from 'jspdf';
 
 const COLORS = ['#3b82f6', '#6366f1', '#8b5cf6', '#0ea5e9', '#14b8a6', '#10b981'];
 
-const FinancialReport = ({ data, columns }) => {
+const FinancialReport = ({ data, columns, config, onConfigChange }) => {
   const reportRef = useRef(null);
-  const [categoryCol, setCategoryCol] = useState('');
-  const [periodCol, setPeriodCol] = useState('');
-  const [valueCol, setValueCol] = useState('');
-  const [chartType, setChartType] = useState('bar');
-  const [isConfigured, setIsConfigured] = useState(false);
+  const [categoryCol, setCategoryCol] = useState(config?.categoryCol || '');
+  const [periodCol, setPeriodCol] = useState(config?.periodCol || '');
+  const [valueCol, setValueCol] = useState(config?.valueCol || '');
+  const [chartType, setChartType] = useState(config?.chartType || 'bar');
+  const [isConfigured, setIsConfigured] = useState(config?.isConfigured || false);
+
+  // Sync with external config when it changes (e.g. on dashboard load)
+  useEffect(() => {
+    if (config) {
+      setCategoryCol(config.categoryCol || '');
+      setPeriodCol(config.periodCol || '');
+      setValueCol(config.valueCol || '');
+      setChartType(config.chartType || 'bar');
+      setIsConfigured(config.isConfigured || false);
+    }
+  }, [config]);
+
+  // Notify parent of internal changes
+  useEffect(() => {
+    if (onConfigChange) {
+      onConfigChange({
+        categoryCol,
+        periodCol,
+        valueCol,
+        chartType,
+        isConfigured
+      });
+    }
+  }, [categoryCol, periodCol, valueCol, chartType, isConfigured]);
 
   // Detect numeric columns
   const numericCols = useMemo(() => {
