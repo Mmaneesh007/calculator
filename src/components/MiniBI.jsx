@@ -378,7 +378,6 @@ const MiniBI = () => {
           </button>
           <div className="workspace-meta">
             {sheetNames.length > 1 && (
-          {sheetNames.length > 1 && (
             <div className="sheet-selector">
               <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Sheet:</span>
               <select value={currentSheet} onChange={handleSheetChange} className="sheet-dropdown">
