@@ -4,11 +4,33 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>premium-calculator</title>
+    <title>CalQube - Enterprise Data BI</title>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <style>
+      .bot-audit-footer {
+        padding: 50px;
+        text-align: center;
+        background: #000;
+        color: #64748b;
+        font-family: sans-serif;
+        font-size: 12px;
+        border-top: 1px solid #1e293b;
+      }
+      .bot-audit-footer a { color: #8b5cf6; margin: 0 10px; text-decoration: none; }
+    </style>
   </head>
   <body>
     <div id="root"></div>
+    
+    <!-- Static footer for automated bot verification -->
+    <footer class="bot-audit-footer">
+      <p>&copy; 2026 CalQube. All Rights Reserved.</p>
+      <a href="/calculator/privacy.html">Privacy Policy</a>
+      <a href="/calculator/terms.html">Terms & Conditions</a>
+      <a href="/calculator/refund.html">Refund Policy</a>
+      <a href="/calculator/contact.html">Contact Us</a>
+    </footer>
+
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
