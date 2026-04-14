@@ -392,6 +392,7 @@ const MiniBI = () => {
           </button>
         </div>
       </div>
+    </div>
 
       {/* Tab Content */}
       {activeTab === 'query' && renderPowerQuery()}
