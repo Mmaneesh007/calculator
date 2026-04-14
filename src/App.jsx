@@ -25,6 +25,8 @@ function AppContent() {
       const hash = window.location.hash;
       if (hash === '#privacy') setShowLegal('privacy');
       else if (hash === '#terms') setShowLegal('terms');
+      else if (hash === '#refund') setShowLegal('refund');
+      else if (hash === '#pricing') setShowLegal('pricing');
       else setShowLegal(null);
     };
 

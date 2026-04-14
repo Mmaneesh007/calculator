@@ -129,9 +129,10 @@ const AuthPage = () => {
         <div className="auth-footer">
           <p>By continuing, you agree to CalQube's</p>
           <div className="auth-footer-links">
-            <a href="#terms">Terms of Service</a>
-            <span>&</span>
-            <a href="#privacy">Privacy Policy</a>
+            <a href="#terms">Terms</a>
+            <a href="#privacy">Privacy</a>
+            <a href="#refund">Refunds</a>
+            <a href="#pricing">Pricing</a>
           </div>
         </div>
       </div>

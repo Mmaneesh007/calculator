@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, FileText, X, ArrowLeft } from 'lucide-react';
+import { Shield, FileText, X, ArrowLeft, CreditCard, HelpCircle } from 'lucide-react';
 
 const LegalPortal = ({ onClose, initialTab = 'privacy' }) => {
-  const [activeTab, setActiveTab] = useState(initialTab);
+  const [activeTab, setActiveTab] = useState(initialTab || 'privacy');
 
-  // Lock scroll when open
   useEffect(() => {
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = 'auto'; };
@@ -14,35 +13,18 @@ const LegalPortal = ({ onClose, initialTab = 'privacy' }) => {
     <div className="legal-content fade-in">
       <h2>Privacy Policy</h2>
       <p className="last-updated">Last Updated: April 14, 2026</p>
-      
       <section>
         <h3>1. Information We Collect</h3>
-        <p>At CalQube, we collect information to provide better services to our users. This includes:</p>
-        <ul>
-          <li><strong>Account Information:</strong> Name, email address, and profile picture when you sign in via Google or Email.</li>
-          <li><strong>User Content:</strong> Data files you upload (.xlsx, .csv) and the dashboard configurations you create.</li>
-          <li><strong>Usage Data:</strong> Information about how you interact with our Data Studio and calculators.</li>
-        </ul>
+        <p>At CalQube, we collect information to provide better services to our users. This includes Account Information (Name, email) and User Content (Dashboards, filters).</p>
       </section>
-
       <section>
-        <h3>2. How We Use Information</h3>
-        <p>We use the information we collect to maintain, protect, and improve our services, and to develop new ones. Specifically:</p>
-        <ul>
-          <li>To save and synchronize your dashboards across devices.</li>
-          <li>To process payments via Stripe (if applicable).</li>
-          <li>To provide real-time collaboration features.</li>
-        </ul>
+        <h3>2. Data Security</h3>
+        <p>We use industry-standard encryption and secure Firebase infrastructure to protect your data.</p>
       </section>
-
       <section>
-        <h3>3. Data Security</h3>
-        <p>We use industry-standard encryption (SSL/TLS) and secure Firebase infrastructure to protect your data. Your uploaded files are stored in a private cloud environment accessible only to you and your authorized collaborators.</p>
-      </section>
-
-      <section>
-        <h3>6. Contact Us</h3>
-        <p>If you have any questions about this Privacy Policy, please contact us at <strong>maneeshsau@zohomail.in</strong></p>
+        <h3>3. Contact Us</h3>
+        <p>Email: <strong>maneeshsau@zohomail.in</strong></p>
+        <p>Address: West Bengal, India</p>
       </section>
     </div>
   );
@@ -51,33 +33,65 @@ const LegalPortal = ({ onClose, initialTab = 'privacy' }) => {
     <div className="legal-content fade-in">
       <h2>Terms of Service</h2>
       <p className="last-updated">Last Updated: April 14, 2026</p>
-
       <section>
         <h3>1. Acceptance of Terms</h3>
-        <p>By accessing or using CalQube, you agree to be bound by these Terms of Service and all applicable laws and regulations.</p>
+        <p>By using CalQube, you agree to these terms. We provide a cloud-based calculation platform.</p>
       </section>
-
       <section>
-        <h3>2. Description of Service</h3>
-        <p>CalQube provides a cloud-based calculation and data visualization platform. We reserve the right to modify or discontinue features at any time.</p>
-      </section>
-
-      <section>
-        <h3>3. User Accounts</h3>
-        <p>You are responsible for maintaining the security of your account. CalQube cannot and will not be liable for any loss or damage from your failure to comply with this security obligation.</p>
-      </section>
-
-      <section>
-        <h3>4. Intellectual Property</h3>
-        <p>You retain all rights to the data you upload. CalQube retains all rights to the software, design, and intellectual property associated with the service.</p>
-      </section>
-
-      <section>
-        <h3>5. Payments and Refunds</h3>
-        <p>Premium features are provided on a subscription basis. Subscriptions are processed via Stripe and are non-refundable unless required by law.</p>
+        <h3>2. Usage Rules</h3>
+        <p>You are responsible for your account's security and the data you upload.</p>
       </section>
     </div>
   );
+
+  const renderRefund = () => (
+    <div className="legal-content fade-in">
+      <h2>Refund & Cancellation</h2>
+      <p className="last-updated">Last Updated: April 14, 2026</p>
+      <section>
+        <h3>1. Cancellation</h3>
+        <p>You may cancel your subscription at any time via account settings. Access remains until the billing cycle ends.</p>
+      </section>
+      <section>
+        <h3>2. Refunds</h3>
+        <p>We offer a **7-day money-back guarantee**. If you're unsatisfied, request a refund via maneeshsau@zohomail.in within 7 days of purchase.</p>
+      </section>
+      <section>
+        <h3>3. Timeline</h3>
+        <p>Approved refunds are processed to the original payment method within **5–7 business days**.</p>
+      </section>
+    </div>
+  );
+
+  const renderPricing = () => (
+    <div className="legal-content fade-in">
+      <h2>Pricing & Plans</h2>
+      <section>
+        <h3>Domestic (India)</h3>
+        <ul>
+          <li>Monthly: ₹199</li>
+          <li>Yearly: ₹2200</li>
+        </ul>
+      </section>
+      <section>
+        <h3>International</h3>
+        <ul>
+          <li>Monthly: $30</li>
+          <li>Yearly: $300</li>
+        </ul>
+      </section>
+    </div>
+  );
+
+  const renderActiveTab = () => {
+    switch(activeTab) {
+      case 'privacy': return renderPrivacy();
+      case 'terms': return renderTerms();
+      case 'refund': return renderRefund();
+      case 'pricing': return renderPricing();
+      default: return renderPrivacy();
+    }
+  };
 
   return (
     <div className="legal-portal-overlay">
@@ -89,17 +103,17 @@ const LegalPortal = ({ onClose, initialTab = 'privacy' }) => {
           </div>
           
           <nav className="legal-nav">
-            <button 
-              className={`legal-nav-item ${activeTab === 'privacy' ? 'active' : ''}`}
-              onClick={() => setActiveTab('privacy')}
-            >
+            <button className={`legal-nav-item ${activeTab === 'privacy' ? 'active' : ''}`} onClick={() => setActiveTab('privacy')}>
               <Shield size={18} /> Privacy Policy
             </button>
-            <button 
-              className={`legal-nav-item ${activeTab === 'terms' ? 'active' : ''}`}
-              onClick={() => setActiveTab('terms')}
-            >
-              <FileText size={18} /> Terms of Service
+            <button className={`legal-nav-item ${activeTab === 'terms' ? 'active' : ''}`} onClick={() => setActiveTab('terms')}>
+              <FileText size={18} /> Terms & Conditions
+            </button>
+            <button className={`legal-nav-item ${activeTab === 'refund' ? 'active' : ''}`} onClick={() => setActiveTab('refund')}>
+              <CreditCard size={18} /> Refund Policy
+            </button>
+            <button className={`legal-nav-item ${activeTab === 'pricing' ? 'active' : ''}`} onClick={() => setActiveTab('pricing')}>
+              <HelpCircle size={18} /> Pricing
             </button>
           </nav>
 
@@ -112,9 +126,8 @@ const LegalPortal = ({ onClose, initialTab = 'privacy' }) => {
           <button className="legal-close-mobile" onClick={onClose}>
             <X size={24} />
           </button>
-          
           <div className="legal-scroll-area">
-            {activeTab === 'privacy' ? renderPrivacy() : renderTerms()}
+            {renderActiveTab()}
           </div>
         </div>
       </div>
