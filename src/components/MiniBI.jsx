@@ -3,7 +3,7 @@ import * as XLSX from 'xlsx';
 import { BarChart, Bar, LineChart, Line, AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, Legend } from 'recharts';
 import { Database, Plus, Trash2, ArrowRight, ArrowUpDown, Filter, ArrowUp, ArrowDown, X, Sparkles, Copy, SortAsc, SortDesc, FileBarChart, Save, FolderOpen, Clock, ChevronRight, Share2, ExternalLink } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { saveDashboard, getUserDashboards, deleteDashboard, getDashboardById } from '../services/firestore';
+import { saveDashboard, getUserDashboards, deleteDashboard, getDashboardById, subscribeToDashboard, SESSION_ID } from '../services/firestore';
 import FinancialReport from './FinancialReport';
 
 const PIE_COLORS = ['#8b5cf6', '#10b981', '#f43f5e', '#eab308', '#3b82f6', '#ec4899', '#14b8a6', '#f97316'];
@@ -39,7 +39,9 @@ const MiniBI = () => {
   const [savedDashboards, setSavedDashboards] = useState([]);
   const [dashboardName, setDashboardName] = useState('Untitled Dashboard');
   const [isSaving, setIsSaving] = useState(false);
-  const [isReadOnly, setIsReadOnly] = useState(false);
+  const [currentDashboardId, setCurrentDashboardId] = useState(null);
+  const [lastSavedState, setLastSavedState] = useState(null);
+  const [syncStatus, setSyncStatus] = useState('synced'); // 'synced' | 'saving' | 'error'
 
   // Load saved dashboards or shared links on mount
   useEffect(() => {
@@ -52,12 +54,81 @@ const MiniBI = () => {
     }
   }, [user]);
 
+  // Phase 5: Real-time Subscriber
+  useEffect(() => {
+    if (!currentDashboardId) return;
+
+    const unsubscribe = subscribeToDashboard(currentDashboardId, (remoteData) => {
+      console.log("Remote update detected:", remoteData);
+      // Update local state with remote data
+      // We skip 'data' to avoid heavy re-renders if it hasn't changed, 
+      // but sync everything else
+      setDashboardName(remoteData.name);
+      setColumns(remoteData.columns || []);
+      setActiveTab(remoteData.activeTab || 'query');
+      setFilters(remoteData.filters || {});
+      setDaxHistory(remoteData.daxHistory || []);
+      setXAxisCol(remoteData.xAxisCol || '');
+      setYAxisCol(remoteData.yAxisCol || '');
+      setChartType(remoteData.chartType || 'bar');
+      setData(remoteData.data || []);
+      setLastSavedState(JSON.stringify(remoteData));
+    });
+
+    return () => unsubscribe();
+  }, [currentDashboardId]);
+
+  // Phase 5: Auto-Save Engine (Debounced)
+  useEffect(() => {
+    if (!currentDashboardId || !user) return;
+
+    const currentState = JSON.stringify({
+      name: dashboardName,
+      data,
+      columns,
+      activeTab,
+      filters,
+      daxHistory,
+      xAxisCol,
+      yAxisCol,
+      chartType
+    });
+
+    // Don't save if it matches the last known cloud state
+    if (currentState === lastSavedState) return;
+
+    setSyncStatus('saving');
+    const timer = setTimeout(async () => {
+      try {
+        const config = {
+          id: currentDashboardId,
+          name: dashboardName,
+          data,
+          columns,
+          activeTab,
+          filters,
+          daxHistory,
+          xAxisCol,
+          yAxisCol,
+          chartType
+        };
+        await saveDashboard(user.uid, config);
+        setLastSavedState(currentState);
+        setSyncStatus('synced');
+      } catch (err) {
+        console.error("Auto-save failed:", err);
+        setSyncStatus('error');
+      }
+    }, 2000); // 2-second debounce
+
+    return () => clearTimeout(timer);
+  }, [currentDashboardId, user, dashboardName, data, columns, activeTab, filters, daxHistory, xAxisCol, yAxisCol, chartType, lastSavedState]);
+
   const handleLoadSharedLink = async (id) => {
     try {
-      const db = await getDashboardById(id);
-      if (db) {
-        handleLoadSaved(db);
-        setIsReadOnly(true);
+      const dbData = await getDashboardById(id);
+      if (dbData) {
+        handleLoadSaved(dbData);
       }
     } catch (err) {
       console.error("Failed to load shared link", err);
@@ -400,19 +471,20 @@ const MiniBI = () => {
         </div>
         
         <div className="workspace-actions">
-          {!isReadOnly && (
-            <button className="btn-save" onClick={handleSave} disabled={isSaving}>
-              <Save size={16} /> {isSaving ? 'Saving...' : 'Save Cloud'}
-            </button>
-          )}
+          <div className={`sync-status ${syncStatus}`}>
+            {syncStatus === 'saving' ? (
+              <><span className="sync-dot saving"></span> Syncing...</>
+            ) : syncStatus === 'error' ? (
+              <><span className="sync-dot error"></span> Sync Failed</>
+            ) : (
+              <><span className="sync-dot synced"></span> Cloud Synced</>
+            )}
+          </div>
+
           <button className="btn-share" onClick={handleShare}>
             <Share2 size={16} /> Share
           </button>
-          {isReadOnly && (
-            <span className="readonly-badge">
-              <ExternalLink size={14} /> View Only
-            </span>
-          )}
+
           <div className="workspace-meta">
             {sheetNames.length > 1 && (
             <div className="sheet-selector">

@@ -11,10 +11,12 @@ import {
   orderBy,
   deleteDoc,
   serverTimestamp,
-  getDoc
+  getDoc,
+  onSnapshot
 } from 'firebase/firestore';
 
 const DASHBOARDS_COLLECTION = 'dashboards';
+export const SESSION_ID = Math.random().toString(36).substring(7);
 
 export const saveDashboard = async (userId, config) => {
   try {
@@ -31,6 +33,7 @@ export const saveDashboard = async (userId, config) => {
       chartType: config.chartType || 'bar',
       reportConfig: config.reportConfig || null,
       updatedAt: serverTimestamp(),
+      lastModifiedBy: SESSION_ID,
     };
 
     if (config.id) {
@@ -104,5 +107,18 @@ export const createCheckoutSession = async (userId, priceId) => {
     console.error("Error creating checkout session:", error);
     throw error;
   }
+};
+
+export const subscribeToDashboard = (dashboardId, onUpdate) => {
+  const docRef = doc(db, DASHBOARDS_COLLECTION, dashboardId);
+  return onSnapshot(docRef, (snap) => {
+    if (snap.exists()) {
+      const data = snap.data();
+      // Only trigger update if it was modified by someone else
+      if (data.lastModifiedBy !== SESSION_ID) {
+        onUpdate({ id: snap.id, ...data });
+      }
+    }
+  });
 };
 
