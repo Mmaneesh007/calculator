@@ -1,7 +1,7 @@
 // src/components/AuthPage.jsx
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { LogIn, Mail, Lock, User, ArrowRight, Chrome } from 'lucide-react';
+import { LogIn, Mail, Lock, User, ArrowRight } from 'lucide-react';
 
 const AuthPage = () => {
   const { loginWithGoogle, loginWithEmail, signupWithEmail } = useAuth();
