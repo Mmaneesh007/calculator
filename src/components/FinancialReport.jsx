@@ -122,7 +122,7 @@ const FinancialReport = ({ data, columns }) => {
     link.click();
   };
 
-  // Download as PDF
+  // Download as PDF (multi-page)
   const downloadPDF = async () => {
     if (!reportRef.current) return;
     const canvas = await html2canvas(reportRef.current, {
@@ -132,8 +132,26 @@ const FinancialReport = ({ data, columns }) => {
     const imgData = canvas.toDataURL('image/png');
     const pdf = new jsPDF('l', 'mm', 'a4');
     const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+    const pdfPageHeight = pdf.internal.pageSize.getHeight();
+
+    // Calculate the image height proportional to PDF width
+    const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+
+    let heightLeft = imgHeight;
+    let position = 0;
+
+    // First page
+    pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
+    heightLeft -= pdfPageHeight;
+
+    // Add more pages if content overflows
+    while (heightLeft > 0) {
+      position -= pdfPageHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
+      heightLeft -= pdfPageHeight;
+    }
+
     pdf.save('financial_report.pdf');
   };
 
