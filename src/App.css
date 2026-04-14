@@ -664,3 +664,181 @@
 .btn-secondary { background: rgba(255,255,255,0.1); color: #fff; padding: 10px 20px; border-radius: 12px; cursor: pointer; border: none; font-weight: 600; }
 .btn-next:hover { background: var(--accent-hover); }
 .btn-secondary:hover { background: rgba(255,255,255,0.2); }
+
+/* ============ FINANCIAL REPORT DASHBOARD ============ */
+
+.report-config {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 32px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+.config-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.report-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.download-actions {
+  display: flex;
+  gap: 8px;
+}
+.download-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  border: none;
+  transition: all 0.2s;
+}
+.download-btn.pdf {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+.download-btn.pdf:hover { background: rgba(239, 68, 68, 0.25); }
+.download-btn.img {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+.download-btn.img:hover { background: rgba(59, 130, 246, 0.25); }
+
+.report-canvas {
+  padding: 24px;
+  border-radius: 16px;
+  background: #0d1117;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+/* KPI Cards Row */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.kpi-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 20px;
+  transition: all 0.2s;
+}
+.kpi-card:hover {
+  border-color: rgba(139, 92, 246, 0.3);
+  transform: translateY(-2px);
+}
+.kpi-header {
+  margin-bottom: 8px;
+}
+.kpi-title {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+.kpi-total {
+  font-size: 32px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 12px;
+}
+.kpi-chart {
+  margin: 0 -8px;
+}
+.kpi-sub-metrics {
+  display: flex;
+  gap: 16px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.kpi-sub {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.kpi-sub-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+.kpi-sub-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+/* Segment Blocks */
+.segment-block {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.segment-header {
+  padding: 12px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.segment-title {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.segment-table-wrapper {
+  overflow-x: auto;
+}
+.segment-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.segment-table th,
+.segment-table td {
+  padding: 10px 20px;
+  text-align: left;
+  font-size: 13px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.segment-table th {
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+.seg-col-label {
+  min-width: 160px;
+}
+.seg-category {
+  color: #cbd5e1;
+  font-size: 13px;
+}
+.seg-value {
+  color: #e2e8f0;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.seg-totals-row {
+  border-top: 2px solid rgba(255,255,255,0.1);
+}
+.seg-total-value {
+  color: #fff !important;
+}
+.seg-period-header {
+  font-size: 11px;
+  color: var(--text-secondary);
+}

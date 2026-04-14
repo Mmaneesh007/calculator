@@ -2,7 +2,8 @@
 import { useState, useMemo } from 'react';
 import * as XLSX from 'xlsx';
 import { BarChart, Bar, LineChart, Line, AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, Legend } from 'recharts';
-import { Database, Plus, Trash2, ArrowRight, ArrowUpDown, Filter, ArrowUp, ArrowDown, X, Sparkles, Copy, SortAsc, SortDesc } from 'lucide-react';
+import { Database, Plus, Trash2, ArrowRight, ArrowUpDown, Filter, ArrowUp, ArrowDown, X, Sparkles, Copy, SortAsc, SortDesc, FileBarChart } from 'lucide-react';
+import FinancialReport from './FinancialReport';
 
 const PIE_COLORS = ['#8b5cf6', '#10b981', '#f43f5e', '#eab308', '#3b82f6', '#ec4899', '#14b8a6', '#f97316'];
 
@@ -210,6 +211,9 @@ const MiniBI = () => {
           <button className={`ws-tab ${activeTab === 'visualize' ? 'active' : ''}`} onClick={() => setActiveTab('visualize')}>
             <ArrowUpDown size={16} /> Visualize
           </button>
+          <button className={`ws-tab ${activeTab === 'report' ? 'active' : ''}`} onClick={() => setActiveTab('report')}>
+            <FileBarChart size={16} /> Report
+          </button>
         </div>
         <div className="workspace-meta">
           <span className="meta-chip">{filteredData.length.toLocaleString()} rows</span>
@@ -224,6 +228,7 @@ const MiniBI = () => {
       {activeTab === 'query' && renderPowerQuery()}
       {activeTab === 'dax' && renderDAX()}
       {activeTab === 'visualize' && renderVisualize()}
+      {activeTab === 'report' && <FinancialReport data={filteredData} columns={columns} />}
     </div>
   );
 
