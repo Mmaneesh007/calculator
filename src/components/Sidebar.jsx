@@ -1,7 +1,10 @@
 // src/components/Sidebar.jsx
-import { Calculator, HardHat, Code, TrendingUp, Lock, Database } from 'lucide-react';
+import { Calculator, HardHat, Code, TrendingUp, Lock, Database, LogOut } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 const Sidebar = ({ activeMode, setActiveMode, isPremium, onPremiumClick }) => {
+  const { user, logout } = useAuth();
+
   const navItems = [
     { id: 'basic', label: 'Basic Calculator', icon: Calculator, isPro: false },
     { id: 'developer', label: 'Developer Mode', icon: Code, isPro: true },
@@ -40,6 +43,28 @@ const Sidebar = ({ activeMode, setActiveMode, isPremium, onPremiumClick }) => {
           );
         })}
       </ul>
+
+      {/* User Profile Section */}
+      {user && (
+        <div className="sidebar-user">
+          <div className="user-info">
+            {user.photoURL ? (
+              <img src={user.photoURL} alt="" className="user-avatar" referrerPolicy="no-referrer" />
+            ) : (
+              <div className="user-avatar-placeholder">
+                {(user.displayName || user.email || '?')[0].toUpperCase()}
+              </div>
+            )}
+            <div className="user-details">
+              <span className="user-name">{user.displayName || 'User'}</span>
+              <span className="user-email">{user.email}</span>
+            </div>
+          </div>
+          <button className="logout-btn" onClick={logout} title="Logout">
+            <LogOut size={18} />
+          </button>
+        </div>
+      )}
     </nav>
   );
 };

@@ -1,6 +1,8 @@
 // src/App.jsx
 import { useState } from 'react';
 import './App.css';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import AuthPage from './components/AuthPage';
 import Sidebar from './components/Sidebar';
 import Calculator from './components/Calculator';
 import DeveloperCalculator from './components/DeveloperCalculator';
@@ -9,14 +11,27 @@ import FinanceCalculator from './components/FinanceCalculator';
 import MiniBI from './components/MiniBI';
 import PaywallModal from './components/PaywallModal';
 
-function App() {
-  const [isPremium, setIsPremium] = useState(false);
+function AppContent() {
+  const { user, loading, isPremium, upgradeToPremium } = useAuth();
   const [showPaywall, setShowPaywall] = useState(false);
   const [activeMode, setActiveMode] = useState('basic');
 
+  if (loading) {
+    return (
+      <div className="loading-screen">
+        <div className="loading-spinner" />
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <AuthPage />;
+  }
+
   const handlePaymentSuccess = (planType) => {
     if (planType === 'premium' || planType === 'basic') {
-      setIsPremium(true);
+      upgradeToPremium();
     }
     setShowPaywall(false);
   };
@@ -57,6 +72,14 @@ function App() {
         />
       )}
     </div>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 
