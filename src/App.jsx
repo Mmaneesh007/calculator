@@ -29,13 +29,6 @@ function AppContent() {
     return <AuthPage />;
   }
 
-  const handlePaymentSuccess = (planType) => {
-    if (planType === 'premium' || planType === 'basic') {
-      upgradeToPremium();
-    }
-    setShowPaywall(false);
-  };
-
   const renderActiveCalculator = () => {
     switch (activeMode) {
       case 'developer':
@@ -68,7 +61,6 @@ function AppContent() {
       {showPaywall && (
         <PaywallModal 
           onClose={() => setShowPaywall(false)} 
-          onPay={handlePaymentSuccess} 
         />
       )}
     </div>

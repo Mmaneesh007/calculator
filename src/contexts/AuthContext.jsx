@@ -9,7 +9,7 @@ import {
   signOut,
   updateProfile,
 } from 'firebase/auth';
-import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, getDoc, serverTimestamp, collection, query, where, onSnapshot } from 'firebase/firestore';
 
 const AuthContext = createContext();
 
@@ -23,18 +23,35 @@ export const AuthProvider = ({ children }) => {
   // Listen for auth state changes (persists across refresh)
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      setLoading(true);
       if (firebaseUser) {
         setUser(firebaseUser);
-        // Check subscription status from Firestore
+        
+        // 1. Check direct user doc for manual premium flags
         const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-        if (userDoc.exists()) {
-          setIsPremium(userDoc.data()?.isPremium || false);
+        if (userDoc.exists() && userDoc.data().isPremium) {
+          setIsPremium(true);
         }
+
+        // 2. Listen for real-time Stripe subscriptions via the extension
+        const subsRef = collection(db, 'customers', firebaseUser.uid, 'subscriptions');
+        const q = query(subsRef, where('status', 'in', ['active', 'trialing']));
+        
+        const unsubscribeSubs = onSnapshot(q, (snapshot) => {
+          if (!snapshot.empty) {
+            setIsPremium(true);
+          }
+        });
+
+        setLoading(false);
+        return () => {
+          unsubscribeSubs();
+        };
       } else {
         setUser(null);
         setIsPremium(false);
+        setLoading(false);
       }
-      setLoading(false);
     });
     return unsubscribe;
   }, []);

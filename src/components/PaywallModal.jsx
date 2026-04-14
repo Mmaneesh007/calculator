@@ -1,205 +1,161 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { X, Check, ShieldCheck, Globe, CreditCard, Zap, Sparkles } from 'lucide-react';
+import { createCheckoutSession } from '../services/firestore';
+import { useAuth } from '../contexts/AuthContext';
+import { onSnapshot } from 'firebase/firestore';
 
-const PaywallModal = ({ onClose, onPay }) => {
-  const [step, setStep] = useState(1);
-  const [selectedPlan, setSelectedPlan] = useState(null);
-  const [paymentMethod, setPaymentMethod] = useState('card');
-  const [isProcessing, setIsProcessing] = useState(false);
+const PaywallModal = ({ onClose }) => {
+  const { user } = useAuth();
+  const [region, setRegion] = useState('international'); // 'international' | 'india'
+  const [interval, setInterval] = useState('monthly'); // 'monthly' | 'yearly'
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
-  const [cardNumber, setCardNumber] = useState('');
-  const [expiry, setExpiry] = useState('');
-  const [cvv, setCvv] = useState('');
-  const [upiId, setUpiId] = useState('');
-
-  const handlePlanSelect = (plan) => {
-    setSelectedPlan(plan);
-    setStep(3);
+  // PLACEHOLDER PRICE IDs - User will replace these with real ones from Stripe
+  const PRICE_MAP = {
+    international: {
+      monthly: { id: 'price_usd_monthly_placeholder', amount: '$30', original: '$45' },
+      yearly: { id: 'price_usd_yearly_placeholder', amount: '$300', original: '$360' }
+    },
+    india: {
+      monthly: { id: 'price_inr_monthly_placeholder', amount: '₹199', original: '₹499' },
+      yearly: { id: 'price_inr_yearly_placeholder', amount: '₹2,200', original: '₹2,388' }
+    }
   };
 
-  const handleProcessPayment = () => {
-    // For realism, let's make sure they typed something before submitting
-    if (paymentMethod === 'card' && (!cardNumber || !expiry || !cvv)) {
-      alert("Please fill out all card details to continue.");
+  const currentPrice = PRICE_MAP[region][interval];
+
+  const handleSubscribe = async () => {
+    if (!user) {
+      alert("Please sign in to subscribe.");
       return;
     }
-    // If they are paying via UPI, we don't strictly require the UPI ID 
-    // because they could be scanning the QR code directly!
-
-    setIsProcessing(true);
-    // Simulate payment processing delay (1.5 seconds)
-    setTimeout(() => {
-      onPay(selectedPlan);
-    }, 1500);
+    
+    setIsRedirecting(true);
+    try {
+      const docRef = await createCheckoutSession(user.uid, currentPrice.id);
+      
+      // Listen for the checkout URL from the Firebase extension
+      const unsubscribe = onSnapshot(docRef, (snap) => {
+        const data = snap.data();
+        if (data?.url) {
+          window.location.assign(data.url);
+        }
+        if (data?.error) {
+          setIsRedirecting(false);
+          alert("Could not create checkout session: " + data.error.message);
+          unsubscribe();
+        }
+      });
+    } catch (err) {
+      console.error(err);
+      setIsRedirecting(false);
+      alert("Failed to initiate checkout. Please try again.");
+    }
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <button className="close-btn" onClick={onClose}>&times;</button>
+    <div className="paywall-overlay fade-in" onClick={onClose}>
+      <div className="paywall-card glass-morphism" onClick={(e) => e.stopPropagation()}>
+        <button className="pw-close" onClick={onClose}><X size={20} /></button>
         
-        {step === 1 && (
-          <>
-            <div className="modal-icon">✨</div>
-            <h2 className="modal-title">Unlock the Answer</h2>
-            <p className="modal-description">
-              You've reached the limit of the free version. Upgrade to Premium to see your calculation results instantly!
-            </p>
+        <div className="pw-header">
+          <div className="pw-badge">
+            <Sparkles size={14} /> PREMIUM ACCESS
+          </div>
+          <h1>Unlock the Full Power of SaaS Calc</h1>
+          <p>Join 10,000+ professionals using advanced analysis</p>
+        </div>
 
-            <div className="features-list">
-              <div className="feature-item">
-                <span className="feature-icon">✓</span>
-                <span>Unlimited calculations</span>
-              </div>
-              <div className="feature-item">
-                <span className="feature-icon">✓</span>
-                <span>View all hidden answers</span>
-              </div>
-              <div className="feature-item">
-                <span className="feature-icon">✓</span>
-                <span>No annoying ads</span>
-              </div>
-            </div>
-
-            <button className="pay-btn" onClick={() => setStep(2)}>
-              Pay Now & Unlock
-            </button>
-          </>
-        )}
-        
-        {step === 2 && (
-          <>
-            <div className="modal-icon">💳</div>
-            <h2 className="modal-title">Choose Your Plan</h2>
-            <p className="modal-description">Select how you want to proceed</p>
-            
-            <div className="plans-container">
-              <div className="plan-card" onClick={() => handlePlanSelect('basic')}>
-                <h3>Basic Plan</h3>
-                <div className="price">₹499<span>/month</span></div>
-                <p>Unlock 1 answer</p>
-              </div>
-              
-              <div className="plan-card premium-card" onClick={() => handlePlanSelect('premium')}>
-                <h3>Premium</h3>
-                <div className="price">₹999<span>/month</span></div>
-                <p>Unlimited math</p>
-              </div>
-            </div>
-          </>
-        )}
-
-        {step === 3 && (
-          <>
-            <div className="modal-icon">🔒</div>
-            <h2 className="modal-title">Secure Checkout</h2>
-            <p className="modal-description" style={{ marginBottom: '16px' }}>
-              {selectedPlan === 'premium' ? 'Premium Plan - ₹999/month' : 'Basic Plan - ₹499/month'}
-            </p>
-
-            <div className="payment-method-selector">
-              <button 
-                className={`method-btn ${paymentMethod === 'card' ? 'active' : ''}`}
-                onClick={() => setPaymentMethod('card')}
-              >
-                <span>💳</span> Card
-              </button>
-              <button 
-                className={`method-btn ${paymentMethod === 'upi' ? 'active' : ''}`}
-                onClick={() => setPaymentMethod('upi')}
-              >
-                <span>📱</span> UPI
-              </button>
-            </div>
-            
-            {paymentMethod === 'card' ? (
-              <div className="payment-form">
-                <div className="input-group">
-                  <label>Card Number</label>
-                  <div className="input-wrapper">
-                    <span>💳</span>
-                    <input 
-                      type="text" 
-                      className="payment-input" 
-                      placeholder="0000 0000 0000 0000" 
-                      maxLength="19"
-                      value={cardNumber}
-                      onChange={(e) => setCardNumber(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div className="input-row">
-                  <div className="input-group">
-                    <label>Expiry</label>
-                    <div className="input-wrapper">
-                      <input 
-                        type="text" 
-                        className="payment-input" 
-                        placeholder="MM/YY" 
-                        maxLength="5"
-                        value={expiry}
-                        onChange={(e) => setExpiry(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                  <div className="input-group">
-                    <label>CVV</label>
-                    <div className="input-wrapper">
-                      <input 
-                        type="password" 
-                        className="payment-input" 
-                        placeholder="•••" 
-                        maxLength="4"
-                        value={cvv}
-                        onChange={(e) => setCvv(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="payment-form upi-form">
-                <div className="input-group">
-                  <label>Enter UPI ID</label>
-                  <div className="input-wrapper">
-                    <span>📱</span>
-                    <input 
-                      type="text" 
-                      className="payment-input" 
-                      placeholder="username@upi"
-                      value={upiId}
-                      onChange={(e) => setUpiId(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div className="upi-qr-placeholder">
-                  <div className="qr-box">
-                    <img 
-                      src="/qr.png" 
-                      alt="UPI QR Code" 
-                      style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '8px' }} 
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                        e.target.nextElementSibling.style.display = 'flex';
-                      }}
-                    />
-                    <div className="qr-inner" style={{ display: 'none' }}>Save image to public/qr.png</div>
-                  </div>
-                </div>
-              </div>
-            )}
-
+        {/* Toggles */}
+        <div className="pw-controls">
+          <div className="pw-toggle-group">
             <button 
-              className={`pay-btn ${isProcessing ? 'processing' : ''}`} 
-              onClick={handleProcessPayment}
-              disabled={isProcessing}
+              className={`pw-toggle ${region === 'international' ? 'active' : ''}`}
+              onClick={() => setRegion('international')}
             >
-              {isProcessing ? 'Processing Transaction...' : `Pay via ${paymentMethod === 'card' ? 'Card' : 'UPI'}`}
+              <Globe size={14} /> International
             </button>
-          </>
-        )}
+            <button 
+              className={`pw-toggle ${region === 'india' ? 'active' : ''}`}
+              onClick={() => setRegion('india')}
+            >
+              🇮🇳 India
+            </button>
+          </div>
+
+          <div className="pw-toggle-group">
+            <button 
+              className={`pw-toggle ${interval === 'monthly' ? 'active' : ''}`}
+              onClick={() => setInterval('monthly')}
+            >
+              Monthly
+            </button>
+            <button 
+              className={`pw-toggle ${interval === 'yearly' ? 'active' : ''}`}
+              onClick={() => setInterval('yearly')}
+            >
+              Yearly <span className="save-tag">SAVE 15%</span>
+            </button>
+          </div>
+        </div>
+
+        <div className="pw-content">
+          {/* Plan Summary */}
+          <div className="pw-plan-box">
+            <div className="pw-price-area">
+              <span className="pw-original">{currentPrice.original}</span>
+              <span className="pw-amount">{currentPrice.amount}</span>
+              <span className="pw-period">/{interval === 'monthly' ? 'month' : 'year'}</span>
+            </div>
+            <p className="pw-saving-note">
+              {interval === 'yearly' ? 'One-time payment. Best for professionals.' : 'Cancel anytime. No lock-in.'}
+            </p>
+          </div>
+
+          {/* Features */}
+          <div className="pw-features">
+            <div className="pw-feature">
+              <div className="check-box"><Check size={14} /></div>
+              <span>Unlimited Cloud Dashboard Storage</span>
+            </div>
+            <div className="pw-feature">
+              <div className="check-box"><Check size={14} /></div>
+              <span>Advanced Power Query & DAX Engines</span>
+            </div>
+            <div className="pw-feature">
+              <div className="check-box"><Check size={14} /></div>
+              <span>Secure Sharing & Shareable Links</span>
+            </div>
+            <div className="pw-feature">
+              <div className="check-box"><Check size={14} /></div>
+              <span>Real-time Financial Reporting</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="pw-footer">
+          <button 
+            className={`pw-primary-btn ${isRedirecting ? 'loading' : ''}`} 
+            onClick={handleSubscribe}
+            disabled={isRedirecting}
+          >
+            {isRedirecting ? 'Redirecting to Secure Checkout...' : 'Upgrade Now'}
+            <Zap size={18} fill="currentColor" />
+          </button>
+          
+          <div className="pw-security">
+            <div className="security-item">
+              <ShieldCheck size={14} /> Secure with Stripe
+            </div>
+            <div className="security-item">
+              <CreditCard size={14} /> UPI & Worldwide Cards
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
 };
 
 export default PaywallModal;
+

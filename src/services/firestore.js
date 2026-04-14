@@ -88,3 +88,21 @@ export const getDashboardById = async (dashboardId) => {
     throw error;
   }
 };
+
+export const createCheckoutSession = async (userId, priceId) => {
+  try {
+    const checkoutSessionRef = collection(db, 'customers', userId, 'checkout_sessions');
+    const docRef = await addDoc(checkoutSessionRef, {
+      price: priceId,
+      success_url: window.location.href,
+      cancel_url: window.location.href,
+    });
+    
+    // The Firebase extension will update this document with the checkout URL
+    return docRef;
+  } catch (error) {
+    console.error("Error creating checkout session:", error);
+    throw error;
+  }
+};
+
