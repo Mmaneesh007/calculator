@@ -34,15 +34,32 @@ export const saveDashboard = async (userId, config) => {
       reportConfig: config.reportConfig || null,
       updatedAt: serverTimestamp(),
       lastModifiedBy: SESSION_ID,
+      lastModifiedByName: config.userName || 'Anonymous',
     };
 
     if (config.id) {
       const docRef = doc(db, DASHBOARDS_COLLECTION, config.id);
       await updateDoc(docRef, dashboardData);
+      
+      // Log the save if requested
+      if (config.shouldLog) {
+        await logActivity(config.id, {
+          uid: userId,
+          displayName: config.userName
+        }, config.actionLabel || 'Updated dashboard');
+      }
+      
       return config.id;
     } else {
       dashboardData.createdAt = serverTimestamp();
       const docRef = await addDoc(collection(db, DASHBOARDS_COLLECTION), dashboardData);
+      
+      // Initial log
+      await logActivity(docRef.id, {
+        uid: userId,
+        displayName: config.userName
+      }, 'Created dashboard');
+      
       return docRef.id;
     }
   } catch (error) {
@@ -120,5 +137,32 @@ export const subscribeToDashboard = (dashboardId, onUpdate) => {
       }
     }
   });
+};
+
+export const logActivity = async (dashboardId, user, action) => {
+  try {
+    const logRef = collection(db, DASHBOARDS_COLLECTION, dashboardId, 'logs');
+    await addDoc(logRef, {
+      userId: user.uid || 'guest',
+      userName: user.displayName || 'Guest User',
+      action,
+      timestamp: serverTimestamp(),
+      sessionId: SESSION_ID
+    });
+  } catch (error) {
+    console.error("Error logging activity:", error);
+  }
+};
+
+export const getDashboardLogs = async (dashboardId) => {
+  try {
+    const logRef = collection(db, DASHBOARDS_COLLECTION, dashboardId, 'logs');
+    const q = query(logRef, orderBy('timestamp', 'desc'));
+    const snap = await getDocs(q);
+    return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } catch (error) {
+    console.error("Error getting logs:", error);
+    return [];
+  }
 };
 

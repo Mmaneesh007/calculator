@@ -10,11 +10,33 @@ import ConstructionCalculator from './components/ConstructionCalculator';
 import FinanceCalculator from './components/FinanceCalculator';
 import MiniBI from './components/MiniBI';
 import PaywallModal from './components/PaywallModal';
+import LegalPortal from './components/LegalPortal';
+import { useEffect } from 'react';
 
 function AppContent() {
-  const { user, loading, isPremium, upgradeToPremium } = useAuth();
+  const { user, loading, isPremium } = useAuth();
   const [showPaywall, setShowPaywall] = useState(false);
   const [activeMode, setActiveMode] = useState('basic');
+  const [showLegal, setShowLegal] = useState(null); // 'privacy' | 'terms' | null
+
+  // Hash router for legal pages
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash;
+      if (hash === '#privacy') setShowLegal('privacy');
+      else if (hash === '#terms') setShowLegal('terms');
+      else setShowLegal(null);
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    handleHashChange(); // Check on mount
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  const closeLegal = () => {
+    window.location.hash = '';
+    setShowLegal(null);
+  };
 
   if (loading) {
     return (
@@ -26,7 +48,12 @@ function AppContent() {
   }
 
   if (!user) {
-    return <AuthPage />;
+    return (
+      <>
+        <AuthPage />
+        {showLegal && <LegalPortal initialTab={showLegal} onClose={closeLegal} />}
+      </>
+    );
   }
 
   const renderActiveCalculator = () => {
@@ -62,6 +89,10 @@ function AppContent() {
         <PaywallModal 
           onClose={() => setShowPaywall(false)} 
         />
+      )}
+
+      {showLegal && (
+        <LegalPortal initialTab={showLegal} onClose={closeLegal} />
       )}
     </div>
   );

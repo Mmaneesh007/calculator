@@ -3,8 +3,9 @@ import * as XLSX from 'xlsx';
 import { BarChart, Bar, LineChart, Line, AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, Legend } from 'recharts';
 import { Database, Plus, Trash2, ArrowRight, ArrowUpDown, Filter, ArrowUp, ArrowDown, X, Sparkles, Copy, SortAsc, SortDesc, FileBarChart, Save, FolderOpen, Clock, ChevronRight, Share2, ExternalLink } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { saveDashboard, getUserDashboards, deleteDashboard, getDashboardById, subscribeToDashboard, SESSION_ID } from '../services/firestore';
+import { saveDashboard, getUserDashboards, deleteDashboard, getDashboardById, subscribeToDashboard, SESSION_ID, logActivity } from '../services/firestore';
 import FinancialReport from './FinancialReport';
+import ActivityLog from './ActivityLog';
 
 const PIE_COLORS = ['#8b5cf6', '#10b981', '#f43f5e', '#eab308', '#3b82f6', '#ec4899', '#14b8a6', '#f97316'];
 
@@ -42,6 +43,7 @@ const MiniBI = () => {
   const [currentDashboardId, setCurrentDashboardId] = useState(null);
   const [lastSavedState, setLastSavedState] = useState(null);
   const [syncStatus, setSyncStatus] = useState('synced'); // 'synced' | 'saving' | 'error'
+  const [showActivityLog, setShowActivityLog] = useState(false);
 
   // Load saved dashboards or shared links on mount
   useEffect(() => {
@@ -110,7 +112,8 @@ const MiniBI = () => {
           daxHistory,
           xAxisCol,
           yAxisCol,
-          chartType
+          chartType,
+          userName: user.displayName || user.email
         };
         await saveDashboard(user.uid, config);
         setLastSavedState(currentState);
@@ -385,6 +388,11 @@ const MiniBI = () => {
       setNewColName('');
       setFormula('');
       setError('');
+
+      // Phase 6: Log the formula application
+      if (currentDashboardId) {
+        logActivity(currentDashboardId, user, `Added computed column: ${newColName}`);
+      }
     } catch (err) {
       setError(`Formula error: ${err.message}. Check column names match exactly (case-sensitive).`);
     }
@@ -484,6 +492,11 @@ const MiniBI = () => {
           <button className="btn-share" onClick={handleShare}>
             <Share2 size={16} /> Share
           </button>
+          
+          <button className="btn-activity" onClick={() => setShowActivityLog(true)}>
+            <Clock size={16} /> Activity
+          </button>
+
 
           <div className="workspace-meta">
             {sheetNames.length > 1 && (
@@ -720,7 +733,12 @@ const MiniBI = () => {
                 <button
                   key={type}
                   className={`chart-type-btn ${chartType === type ? 'active' : ''}`}
-                  onClick={() => setChartType(type)}
+                  onClick={() => { 
+                    setChartType(type); 
+                    if (currentDashboardId) {
+                      logActivity(currentDashboardId, user, `Changed chart type to ${type}`);
+                    }
+                  }}
                 >
                   {type.charAt(0).toUpperCase() + type.slice(1)}
                 </button>

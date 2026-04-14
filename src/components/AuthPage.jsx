@@ -124,6 +124,16 @@ const AuthPage = () => {
             {isSignup ? 'Sign In' : 'Sign Up'}
           </button>
         </p>
+
+        {/* Legal Links */}
+        <div className="auth-footer">
+          <p>By continuing, you agree to CalQube's</p>
+          <div className="auth-footer-links">
+            <a href="#terms">Terms of Service</a>
+            <span>&</span>
+            <a href="#privacy">Privacy Policy</a>
+          </div>
+        </div>
       </div>
     </div>
   );

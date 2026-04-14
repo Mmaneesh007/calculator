@@ -24,7 +24,7 @@ const Sidebar = ({ activeMode, setActiveMode, isPremium, onPremiumClick }) => {
   return (
     <nav className="sidebar">
       <div className="sidebar-header">
-        <h2>SaaS Calc</h2>
+        <h2 className="brand-name">CalQube</h2>
         {isPremium && <span className="premium-badge-small">PRO</span>}
       </div>
       <ul className="sidebar-nav">
@@ -65,6 +65,13 @@ const Sidebar = ({ activeMode, setActiveMode, isPremium, onPremiumClick }) => {
           </button>
         </div>
       )}
+
+      {/* Legal Footer */}
+      <div className="sidebar-footer">
+        <a href="#privacy" className="footer-link">Privacy</a>
+        <span className="footer-dot">•</span>
+        <a href="#terms" className="footer-link">Terms</a>
+      </div>
     </nav>
   );
 };
