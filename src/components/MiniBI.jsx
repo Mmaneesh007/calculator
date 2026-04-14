@@ -161,12 +161,44 @@ const MiniBI = () => {
     }
   };
 
-  const handleShare = () => {
-    if (!currentDashboardId) {
-      alert("Please save the dashboard first to share.");
-      return;
+  const handleShare = async () => {
+    let dashboardId = currentDashboardId;
+    
+    if (!dashboardId) {
+      if (!user) {
+        alert("Please log in to share dashboards.");
+        return;
+      }
+      
+      setIsSaving(true);
+      try {
+        const config = {
+          id: null,
+          name: dashboardName,
+          data,
+          columns,
+          activeTab,
+          filters,
+          daxHistory,
+          xAxisCol,
+          yAxisCol,
+          chartType,
+          reportConfig,
+          userName: user.displayName || user.email
+        };
+        dashboardId = await saveDashboard(user.uid, config);
+        setCurrentDashboardId(dashboardId);
+        await loadUserDashboards();
+      } catch (err) {
+        console.error("Failed to auto-save before sharing:", err);
+        alert("Could not save dashboard for sharing. Please try clicking Save manually.");
+        setIsSaving(false);
+        return;
+      }
+      setIsSaving(false);
     }
-    const url = `${window.location.origin}${window.location.pathname}?mode=minibi&share=${currentDashboardId}`;
+    
+    const url = `${window.location.origin}${window.location.pathname}?mode=minibi&share=${dashboardId}`;
     navigator.clipboard.writeText(url);
     alert("Shareable link copied to clipboard!\nAnyone with this link can view this dashboard.");
   };
