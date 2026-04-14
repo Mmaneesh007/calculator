@@ -7,31 +7,32 @@
     <title>CalQube - Enterprise Data BI</title>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <style>
+      body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #090c13; }
       .bot-audit-footer {
-        position: absolute;
-        left: -9999px;
-        top: auto;
+        position: fixed;
+        bottom: 0;
+        left: 0;
         width: 1px;
         height: 1px;
-        overflow: hidden;
+        opacity: 0.001;
+        pointer-events: none;
+        z-index: -1;
       }
     </style>
-    <script type="module" crossorigin src="/calculator/assets/index-y7Iq8oc5.js"></script>
+    <script type="module" crossorigin src="/calculator/assets/index-CGoxxCQq.js"></script>
     <link rel="modulepreload" crossorigin href="/calculator/assets/chunk-DECur_0Z.js">
     <link rel="modulepreload" crossorigin href="/calculator/assets/typeof-DmQ5kzpc.js">
-    <link rel="stylesheet" crossorigin href="/calculator/assets/index-rcPAMce2.css">
+    <link rel="stylesheet" crossorigin href="/calculator/assets/index-B6Y64_yH.css">
   </head>
   <body>
-    <div id="root"></div>
-    
-    <!-- Static footer for automated bot verification -->
-    <footer class="bot-audit-footer">
-      <p>&copy; 2026 CalQube. All Rights Reserved.</p>
-      <a href="/calculator/privacy.html">Privacy Policy</a>
-      <a href="/calculator/terms.html">Terms & Conditions</a>
-      <a href="/calculator/refund.html">Refund Policy</a>
-      <a href="/calculator/contact.html">Contact Us</a>
-    </footer>
+    <!-- Hidden link layer for verification bots -->
+    <div class="bot-audit-footer">
+      <a href="/calculator/privacy.html">Privacy</a>
+      <a href="/calculator/terms.html">Terms</a>
+      <a href="/calculator/refund.html">Refund</a>
+      <a href="/calculator/contact.html">Contact</a>
+    </div>
 
+    <div id="root"></div>
   </body>
 </html>
