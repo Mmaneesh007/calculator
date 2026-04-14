@@ -108,7 +108,8 @@ const MiniBI = () => {
       await loadUserDashboards();
       alert("Dashboard saved successfully!");
     } catch (err) {
-      alert("Failed to save dashboard.");
+      console.error("Failed to save dashboard:", err);
+      alert(`Failed to save dashboard: ${err.message}`);
     } finally {
       setIsSaving(false);
     }
