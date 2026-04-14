@@ -9,6 +9,19 @@ import ActivityLog from './ActivityLog';
 
 const PIE_COLORS = ['#8b5cf6', '#10b981', '#f43f5e', '#eab308', '#3b82f6', '#ec4899', '#14b8a6', '#f97316'];
 
+const SAMPLE_INTERNAL_DATA = [
+  { Date: '2024-01-01', Category: 'Electronics', Product: 'Laptop', Region: 'North', Sales: 120000, Cost: 85000, Quantity: 2 },
+  { Date: '2024-01-05', Category: 'Software', Product: 'Cloud Subscription', Region: 'North', Sales: 45000, Cost: 10000, Quantity: 15 },
+  { Date: '2024-01-10', Category: 'Electronics', Product: 'Monitor', Region: 'South', Sales: 25000, Cost: 15000, Quantity: 5 },
+  { Date: '2024-01-12', Category: 'Hardware', Product: 'Printer', Region: 'East', Sales: 18000, Cost: 12000, Quantity: 3 },
+  { Date: '2024-01-15', Category: 'Software', Product: 'Antivirus', Region: 'West', Sales: 5000, Cost: 500, Quantity: 10 },
+  { Date: '2024-02-01', Category: 'Electronics', Product: 'Laptop', Region: 'West', Sales: 120000, Cost: 85000, Quantity: 5 },
+  { Date: '2024-02-05', Category: 'Software', Product: 'Cloud Subscription', Region: 'South', Sales: 45000, Cost: 10000, Quantity: 20 },
+  { Date: '2024-02-10', Category: 'Hardware', Product: 'Mouse', Region: 'North', Sales: 1200, Cost: 500, Quantity: 25 },
+  { Date: '2024-03-01', Category: 'Electronics', Product: 'Laptop', Region: 'North', Sales: 120000, Cost: 85000, Quantity: 3 },
+  { Date: '2024-03-10', Category: 'Software', Product: 'Cloud Subscription', Region: 'East', Sales: 45000, Cost: 10000, Quantity: 30 }
+];
+
 const MiniBI = () => {
   const [data, setData] = useState([]);
   const [columns, setColumns] = useState([]);
@@ -250,6 +263,17 @@ const MiniBI = () => {
     reader.readAsBinaryString(file);
   };
 
+  const loadSampleData = () => {
+    setData(SAMPLE_INTERNAL_DATA);
+    const cols = Object.keys(SAMPLE_INTERNAL_DATA[0]);
+    setColumns(cols);
+    setXAxisCol(cols[1]); // Category
+    setYAxisCol(cols[4]); // Sales
+    setDashboardName('Sample Financial Dashboard');
+    setStep(2);
+    setActiveTab('visualize');
+  };
+
   // ==================== POWER QUERY FUNCTIONS ====================
 
   const handleSort = (col, dir) => {
@@ -412,10 +436,15 @@ const MiniBI = () => {
         <div className="landing-card upload-card">
           <h3>Analyze New Data</h3>
           <p>Upload Excel or CSV to start fresh</p>
-          <label className="file-upload-btn">
-            Browse Files
-            <input type="file" accept=".xlsx,.xls,.csv" onChange={handleFileUpload} style={{ display: 'none' }} />
-          </label>
+          <div className="landing-button-group">
+            <label className="file-upload-btn">
+              Browse Files
+              <input type="file" accept=".xlsx,.xls,.csv" onChange={handleFileUpload} style={{ display: 'none' }} />
+            </label>
+            <button className="sample-data-btn" onClick={loadSampleData}>
+              <Sparkles size={16} /> Load Sample Data
+            </button>
+          </div>
         </div>
 
         {/* Right Side: Saved Dashboards */}

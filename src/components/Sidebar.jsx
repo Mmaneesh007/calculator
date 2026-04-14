@@ -10,7 +10,7 @@ const Sidebar = ({ activeMode, setActiveMode, isPremium, onPremiumClick }) => {
     { id: 'developer', label: 'Developer Mode', icon: Code, isPro: true },
     { id: 'construction', label: 'BOM Estimator', icon: HardHat, isPro: true },
     { id: 'finance', label: 'Wealth Planner', icon: TrendingUp, isPro: true },
-    { id: 'minibi', label: 'Data Studio', icon: Database, isPro: true },
+    { id: 'minibi', label: 'Data Studio', icon: Database, isPro: false },
   ];
 
   const handleNavClick = (item) => {

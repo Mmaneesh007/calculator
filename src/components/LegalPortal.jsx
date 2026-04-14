@@ -41,8 +41,8 @@ const LegalPortal = ({ onClose, initialTab = 'privacy' }) => {
       </section>
 
       <section>
-        <h3>4. Cookies</h3>
-        <p>We use functional cookies to maintain your login session and preferences. We do not use tracking cookies for third-party advertising.</p>
+        <h3>6. Contact Us</h3>
+        <p>If you have any questions about this Privacy Policy, please contact us at <strong>maneeshsau@zohomail.in</strong></p>
       </section>
     </div>
   );
