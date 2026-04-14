@@ -291,15 +291,21 @@ const FinancialReport = ({ data, columns }) => {
             <span className="segment-title">{valueCol} by {categoryCol} | {chartType.charAt(0).toUpperCase() + chartType.slice(1)} Chart</span>
           </div>
           <div style={{ padding: '20px' }}>
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={chartType === 'pie' ? 420 : 300}>
               {chartType === 'pie' ? (
                 <PieChart>
-                  <Pie data={mainChartData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={110}
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                  <Pie data={mainChartData} dataKey="value" nameKey="name" cx="50%" cy="45%" outerRadius={120}
+                    labelLine={false}
+                    label={({ name, percent, x, y }) => (
+                      <text x={x} y={y} fill="#e2e8f0" textAnchor="middle" dominantBaseline="central" fontSize={11}>
+                        {`${name.length > 12 ? name.slice(0, 12) + '…' : name} ${(percent * 100).toFixed(0)}%`}
+                      </text>
+                    )}>
                     {mainChartData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                   </Pie>
-                  <Tooltip contentStyle={{ backgroundColor: '#090c13', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }} />
-                  <Legend />
+                  <Tooltip contentStyle={{ backgroundColor: '#090c13', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}
+                    formatter={(value) => `₹${Number(value).toLocaleString('en-IN')}`} />
+                  <Legend wrapperStyle={{ paddingTop: '16px' }} />
                 </PieChart>
               ) : chartType === 'line' ? (
                 <LineChart data={mainChartData} margin={{ top: 10, right: 30, left: 10, bottom: 0 }}>
