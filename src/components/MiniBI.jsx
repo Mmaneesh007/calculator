@@ -1,8 +1,9 @@
-// src/components/MiniBI.jsx
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import * as XLSX from 'xlsx';
 import { BarChart, Bar, LineChart, Line, AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, Legend } from 'recharts';
-import { Database, Plus, Trash2, ArrowRight, ArrowUpDown, Filter, ArrowUp, ArrowDown, X, Sparkles, Copy, SortAsc, SortDesc, FileBarChart } from 'lucide-react';
+import { Database, Plus, Trash2, ArrowRight, ArrowUpDown, Filter, ArrowUp, ArrowDown, X, Sparkles, Copy, SortAsc, SortDesc, FileBarChart, Save, FolderOpen, Clock, ChevronRight } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import { saveDashboard, getUserDashboards, deleteDashboard } from '../services/firestore';
 import FinancialReport from './FinancialReport';
 
 const PIE_COLORS = ['#8b5cf6', '#10b981', '#f43f5e', '#eab308', '#3b82f6', '#ec4899', '#14b8a6', '#f97316'];
@@ -13,6 +14,9 @@ const MiniBI = () => {
   const [step, setStep] = useState(1); // 1=upload, 2=transform, 3=visualize
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('query'); // 'query' | 'dax' | 'visualize'
+  const [workbook, setWorkbook] = useState(null);
+  const [sheetNames, setSheetNames] = useState([]);
+  const [currentSheet, setCurrentSheet] = useState('');
 
   // Power Query states
   const [sortCol, setSortCol] = useState('');
@@ -29,6 +33,85 @@ const MiniBI = () => {
   const [xAxisCol, setXAxisCol] = useState('');
   const [yAxisCol, setYAxisCol] = useState('');
   const [chartType, setChartType] = useState('bar');
+  
+  // SaaS / Firestore states
+  const { user } = useAuth();
+  const [savedDashboards, setSavedDashboards] = useState([]);
+  const [currentDashboardId, setCurrentDashboardId] = useState(null);
+  const [dashboardName, setDashboardName] = useState('Untitled Dashboard');
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Load saved dashboards on mount
+  useEffect(() => {
+    if (user) {
+      loadUserDashboards();
+    }
+  }, [user]);
+
+  const loadUserDashboards = async () => {
+    try {
+      const docs = await getUserDashboards(user.uid);
+      setSavedDashboards(docs);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!user) return;
+    setIsSaving(true);
+    try {
+      const name = prompt("Enter dashboard name:", dashboardName) || dashboardName;
+      setDashboardName(name);
+      
+      const config = {
+        id: currentDashboardId,
+        name,
+        data,
+        columns,
+        activeTab,
+        filters,
+        daxHistory,
+        xAxisCol,
+        yAxisCol,
+        chartType,
+      };
+      
+      const id = await saveDashboard(user.uid, config);
+      setCurrentDashboardId(id);
+      await loadUserDashboards();
+      alert("Dashboard saved successfully!");
+    } catch (err) {
+      alert("Failed to save dashboard.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleLoadSaved = (db) => {
+    setCurrentDashboardId(db.id);
+    setDashboardName(db.name);
+    setData(db.data || []);
+    setColumns(db.columns || []);
+    setActiveTab(db.activeTab || 'query');
+    setFilters(db.filters || {});
+    setDaxHistory(db.daxHistory || []);
+    setXAxisCol(db.xAxisCol || '');
+    setYAxisCol(db.yAxisCol || '');
+    setChartType(db.chartType || 'bar');
+    setStep(2);
+  };
+
+  const handleDeleteSaved = async (e, id) => {
+    e.stopPropagation();
+    if (!confirm("Delete this dashboard?")) return;
+    try {
+      await deleteDashboard(id);
+      await loadUserDashboards();
+    } catch (err) {
+      alert("Failed to delete.");
+    }
+  };
 
   // File upload handler
   const handleFileUpload = (e) => {
@@ -39,7 +122,11 @@ const MiniBI = () => {
       try {
         const bstr = evt.target.result;
         const wb = XLSX.read(bstr, { type: 'binary' });
+        setWorkbook(wb);
+        setSheetNames(wb.SheetNames);
         const wsname = wb.SheetNames[0];
+        setCurrentSheet(wsname);
+        
         const ws = wb.Sheets[wsname];
         let jsonData = XLSX.utils.sheet_to_json(ws);
         if (jsonData.length === 0) throw new Error("No data found");
@@ -144,6 +231,33 @@ const MiniBI = () => {
     return vals.slice(0, 100); // cap for performance
   };
 
+  // ==================== MULTI-SHEET HANDLER ====================
+  const handleSheetChange = (e) => {
+    const wsname = e.target.value;
+    setCurrentSheet(wsname);
+    try {
+      const ws = workbook.Sheets[wsname];
+      let jsonData = XLSX.utils.sheet_to_json(ws);
+      if (jsonData.length === 0) {
+        alert("Selected sheet is empty.");
+        return;
+      }
+      let cols = Object.keys(jsonData[0]);
+      if (jsonData.length > 50000) {
+        jsonData = jsonData.slice(0, 50000);
+        alert("Truncated to 50,000 rows for performance.");
+      }
+      setData(jsonData);
+      setColumns(cols);
+      setFilters({});
+      setDaxHistory([]);
+      setXAxisCol(cols[0]);
+      setYAxisCol(cols[1] || cols[0]);
+    } catch (err) {
+      alert("Failed to parse sheet.");
+    }
+  };
+
   // ==================== DAX FUNCTIONS ====================
 
   const daxTemplates = [
@@ -182,15 +296,57 @@ const MiniBI = () => {
 
   const renderUploadStep = () => (
     <div className="upload-zone fade-in">
-      <Database size={64} className="icon-main" style={{ color: '#8b5cf6', marginBottom: '24px' }} />
-      <h2 style={{ border: 'none' }}>Data Studio</h2>
-      <p style={{ color: 'var(--text-secondary)', marginBottom: '32px', maxWidth: '400px', textAlign: 'center', lineHeight: 1.6 }}>
-        Upload your Excel (.xlsx) or CSV file to transform, analyze, and visualize your data — all in the browser. No data leaves your device.
-      </p>
-      <label className="file-upload-btn">
-        Browse Files
-        <input type="file" accept=".xlsx,.xls,.csv" onChange={handleFileUpload} style={{ display: 'none' }} />
-      </label>
+      <div className="upload-header">
+        <Database size={56} className="icon-main" style={{ color: '#8b5cf6' }} />
+        <h2 style={{ border: 'none', margin: 0 }}>Data Studio</h2>
+      </div>
+
+      <div className="studio-landing">
+        {/* Left Side: Upload */}
+        <div className="landing-card upload-card">
+          <h3>Analyze New Data</h3>
+          <p>Upload Excel or CSV to start fresh</p>
+          <label className="file-upload-btn">
+            Browse Files
+            <input type="file" accept=".xlsx,.xls,.csv" onChange={handleFileUpload} style={{ display: 'none' }} />
+          </label>
+        </div>
+
+        {/* Right Side: Saved Dashboards */}
+        <div className="landing-card saved-card">
+          <div className="card-header">
+            <h3>Recent Dashboards</h3>
+            <FolderOpen size={18} style={{ color: '#94a3b8' }} />
+          </div>
+          
+          <div className="saved-list">
+            {savedDashboards.length > 0 ? (
+              savedDashboards.map(db => (
+                <div key={db.id} className="saved-item" onClick={() => handleLoadSaved(db)}>
+                  <div className="saved-info">
+                    <span className="saved-name">{db.name}</span>
+                    <span className="saved-date">
+                      <Clock size={12} /> {db.updatedAt?.toDate?.().toLocaleDateString() || 'Today'}
+                    </span>
+                  </div>
+                  <div className="saved-actions">
+                    <button onClick={(e) => handleDeleteSaved(e, db.id)} className="delete-saved">
+                      <Trash2 size={14} />
+                    </button>
+                    <ChevronRight size={18} className="chevron" />
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="no-saved">
+                <p>No dashboards saved yet.</p>
+                <p style={{ fontSize: '11px' }}>Your analysis will appear here once saved.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      
       {error && <p className="error-text" style={{ color: '#fb7185', marginTop: '16px' }}>{error}</p>}
     </div>
   );
@@ -215,11 +371,25 @@ const MiniBI = () => {
             <FileBarChart size={16} /> Report
           </button>
         </div>
-        <div className="workspace-meta">
+        
+        <div className="workspace-actions">
+          <button className="btn-save" onClick={handleSave} disabled={isSaving}>
+            <Save size={16} /> {isSaving ? 'Saving...' : 'Save Cloud'}
+          </button>
+          <div className="workspace-meta">
+            {sheetNames.length > 1 && (
+          {sheetNames.length > 1 && (
+            <div className="sheet-selector">
+              <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Sheet:</span>
+              <select value={currentSheet} onChange={handleSheetChange} className="sheet-dropdown">
+                {sheetNames.map(name => <option key={name} value={name}>{name}</option>)}
+              </select>
+            </div>
+          )}
           <span className="meta-chip">{filteredData.length.toLocaleString()} rows</span>
           <span className="meta-chip">{columns.length} columns</span>
-          <button className="btn-secondary btn-sm" onClick={() => { setStep(1); setData([]); setColumns([]); setFilters({}); setDaxHistory([]); }}>
-            New File
+          <button className="btn-secondary btn-sm" onClick={() => { setStep(1); setData([]); setColumns([]); setFilters({}); setDaxHistory([]); setCurrentDashboardId(null); setDashboardName('Untitled Dashboard'); }}>
+            New
           </button>
         </div>
       </div>
