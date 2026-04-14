@@ -166,3 +166,25 @@ export const getDashboardLogs = async (dashboardId) => {
   }
 };
 
+export const updateUserPremiumStatus = async (userId, isPremium) => {
+  try {
+    const userRef = doc(db, 'users', userId);
+    await updateDoc(userRef, { isPremium });
+  } catch (error) {
+    console.error("Error updating premium status:", error);
+  }
+};
+
+export const recordPayment = async (userId, paymentData) => {
+  try {
+    const paymentRef = collection(db, 'payments');
+    await addDoc(paymentRef, {
+      userId,
+      ...paymentData,
+      timestamp: serverTimestamp()
+    });
+  } catch (error) {
+    console.error("Error recording payment:", error);
+  }
+};
+
