@@ -694,7 +694,7 @@ const MiniBI = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredData.slice(0, 50).map((row, idx) => (
+              {filteredData.map((row, idx) => (
                 <tr key={idx}>
                   {columns.map(col => (
                     <td key={col}>{typeof row[col] === 'number' ? row[col].toLocaleString('en-IN') : String(row[col] ?? '')}</td>
@@ -704,9 +704,9 @@ const MiniBI = () => {
             </tbody>
           </table>
         </div>
-        {filteredData.length > 50 && (
+        {filteredData.length > 0 && (
           <p className="table-footer-note">
-            Showing 50 of {filteredData.length.toLocaleString()} filtered rows.
+            Showing all {filteredData.length.toLocaleString()} filtered rows.
           </p>
         )}
       </div>
