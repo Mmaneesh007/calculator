@@ -1,6 +1,6 @@
 // src/components/FinancialReport.jsx
 import { useMemo, useRef, useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { BarChart, Bar, PieChart, Pie, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid, Legend } from 'recharts';
 import { Download, FileText, Image } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
@@ -12,6 +12,7 @@ const FinancialReport = ({ data, columns }) => {
   const [categoryCol, setCategoryCol] = useState('');
   const [periodCol, setPeriodCol] = useState('');
   const [valueCol, setValueCol] = useState('');
+  const [chartType, setChartType] = useState('bar');
   const [isConfigured, setIsConfigured] = useState(false);
 
   // Detect numeric columns
@@ -142,12 +143,23 @@ const FinancialReport = ({ data, columns }) => {
     }
   };
 
+  // Main chart data: category totals
+  const mainChartData = useMemo(() => {
+    if (!categoryCol || !valueCol) return [];
+    const grouped = {};
+    data.forEach(row => {
+      const cat = String(row[categoryCol] || 'Other');
+      grouped[cat] = (grouped[cat] || 0) + (Number(row[valueCol]) || 0);
+    });
+    return Object.entries(grouped).slice(0, 20).map(([name, value]) => ({ name, value }));
+  }, [data, categoryCol, valueCol]);
+
   if (!isConfigured) {
     return (
       <div className="report-config fade-in">
         <h3 style={{ color: '#fff', marginBottom: '8px' }}>Configure Financial Report</h3>
         <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginBottom: '24px' }}>
-          Map your data columns to generate a professional financial analysis dashboard.
+          Map your data columns and choose your chart style to generate a professional dashboard.
         </p>
 
         <div className="config-grid">
@@ -171,6 +183,27 @@ const FinancialReport = ({ data, columns }) => {
               <option value="">Select...</option>
               {numericCols.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
+          </div>
+        </div>
+
+        {/* Chart Type Selector */}
+        <div style={{ marginTop: '24px' }}>
+          <label style={{ display: 'block', fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '10px', fontWeight: 500 }}>Chart Type</label>
+          <div className="chart-type-grid" style={{ maxWidth: '400px' }}>
+            {[
+              { id: 'bar', label: '📊 Bar Chart' },
+              { id: 'column', label: '📈 Column Chart' },
+              { id: 'pie', label: '🥧 Pie Chart' },
+              { id: 'line', label: '📉 Line Chart' },
+            ].map(t => (
+              <button
+                key={t.id}
+                className={`chart-type-btn ${chartType === t.id ? 'active' : ''}`}
+                onClick={() => setChartType(t.id)}
+              >
+                {t.label}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -232,6 +265,55 @@ const FinancialReport = ({ data, columns }) => {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Main Chart Section */}
+        <div className="segment-block" style={{ marginBottom: '16px' }}>
+          <div className="segment-header">
+            <span className="segment-title">{valueCol} by {categoryCol} | {chartType.charAt(0).toUpperCase() + chartType.slice(1)} Chart</span>
+          </div>
+          <div style={{ padding: '20px' }}>
+            <ResponsiveContainer width="100%" height={300}>
+              {chartType === 'pie' ? (
+                <PieChart>
+                  <Pie data={mainChartData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={110}
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                    {mainChartData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                  </Pie>
+                  <Tooltip contentStyle={{ backgroundColor: '#090c13', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }} />
+                  <Legend />
+                </PieChart>
+              ) : chartType === 'line' ? (
+                <LineChart data={mainChartData} margin={{ top: 10, right: 30, left: 10, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                  <XAxis dataKey="name" stroke="#94a3b8" tick={{ fontSize: 12 }} />
+                  <YAxis stroke="#94a3b8" />
+                  <Tooltip contentStyle={{ backgroundColor: '#090c13', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }} />
+                  <Line type="monotone" dataKey="value" stroke="#8b5cf6" strokeWidth={3} dot={{ r: 5, fill: '#8b5cf6' }} />
+                </LineChart>
+              ) : (
+                <BarChart data={mainChartData} layout={chartType === 'bar' ? 'vertical' : 'horizontal'}
+                  margin={{ top: 10, right: 30, left: chartType === 'bar' ? 80 : 10, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                  {chartType === 'bar' ? (
+                    <>
+                      <XAxis type="number" stroke="#94a3b8" />
+                      <YAxis type="category" dataKey="name" stroke="#94a3b8" tick={{ fontSize: 12 }} width={70} />
+                    </>
+                  ) : (
+                    <>
+                      <XAxis dataKey="name" stroke="#94a3b8" tick={{ fontSize: 12 }} />
+                      <YAxis stroke="#94a3b8" />
+                    </>
+                  )}
+                  <Tooltip contentStyle={{ backgroundColor: '#090c13', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }} />
+                  <Bar dataKey="value" radius={[4, 4, 4, 4]}>
+                    {mainChartData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                  </Bar>
+                </BarChart>
+              )}
+            </ResponsiveContainer>
+          </div>
         </div>
 
         {/* Segment Revenue Table */}
