@@ -6,6 +6,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { saveDashboard, getUserDashboards, deleteDashboard, getDashboardById, subscribeToDashboard, SESSION_ID, logActivity } from '../services/firestore';
 import FinancialReport from './FinancialReport';
 import ActivityLog from './ActivityLog';
+import AIInsightPanel from './AIInsightPanel';
+import { getAIInsights } from '../services/aiService';
 
 const PIE_COLORS = ['#8b5cf6', '#10b981', '#f43f5e', '#eab308', '#3b82f6', '#ec4899', '#14b8a6', '#f97316'];
 
@@ -58,6 +60,9 @@ const MiniBI = () => {
   const [syncStatus, setSyncStatus] = useState('synced'); // 'synced' | 'saving' | 'error'
   const [showActivityLog, setShowActivityLog] = useState(false);
   const [reportConfig, setReportConfig] = useState(null);
+  const [aiInsights, setAiInsights] = useState('');
+  const [isAILoading, setIsAILoading] = useState(false);
+  const [showAIPanel, setShowAIPanel] = useState(false);
 
   // Load saved dashboards or shared links on mount
   useEffect(() => {
@@ -88,6 +93,7 @@ const MiniBI = () => {
       setYAxisCol(remoteData.yAxisCol || '');
       setChartType(remoteData.chartType || 'bar');
       setData(remoteData.data || []);
+      setAiInsights(remoteData.aiInsights || '');
       setLastSavedState(JSON.stringify(remoteData));
     });
 
@@ -108,7 +114,8 @@ const MiniBI = () => {
       xAxisCol,
       yAxisCol,
       chartType,
-      reportConfig
+      reportConfig,
+      aiInsights
     });
 
     // Phase 8: Don't save if it matches the last known cloud state
@@ -129,6 +136,7 @@ const MiniBI = () => {
           yAxisCol,
           chartType,
           reportConfig,
+          aiInsights,
           userName: user.displayName || user.email
         };
         
@@ -148,7 +156,7 @@ const MiniBI = () => {
     }, 2000); // 2-second debounce
 
     return () => clearTimeout(timer);
-  }, [currentDashboardId, user, dashboardName, data, columns, activeTab, filters, daxHistory, xAxisCol, yAxisCol, chartType, reportConfig, lastSavedState]);
+  }, [currentDashboardId, user, dashboardName, data, columns, activeTab, filters, daxHistory, xAxisCol, yAxisCol, chartType, reportConfig, lastSavedState, aiInsights]);
 
   const handleLoadSharedLink = async (id) => {
     try {
@@ -184,6 +192,7 @@ const MiniBI = () => {
           yAxisCol,
           chartType,
           reportConfig,
+          aiInsights,
           userName: user.displayName || user.email
         };
         dashboardId = await saveDashboard(user.uid, config);
@@ -231,6 +240,7 @@ const MiniBI = () => {
         yAxisCol,
         chartType,
         reportConfig,
+        aiInsights
       };
       
       const id = await saveDashboard(user.uid, config);
@@ -257,6 +267,7 @@ const MiniBI = () => {
     setYAxisCol(db.yAxisCol || '');
     setChartType(db.chartType || 'bar');
     setReportConfig(db.reportConfig || null);
+    setAiInsights(db.aiInsights || '');
     setStep(2);
   };
 
@@ -571,6 +582,27 @@ const MiniBI = () => {
             <Clock size={16} /> Activity
           </button>
 
+          <button 
+            className={`btn-ai ${isAILoading ? 'loading' : ''}`} 
+            onClick={async () => {
+              if (isAILoading) return;
+              setIsAILoading(true);
+              try {
+                const insights = await getAIInsights(filteredData, columns);
+                setAiInsights(insights);
+                setShowAIPanel(true);
+                logActivity(currentDashboardId, user, "Generated AI Data Insights");
+              } catch (err) {
+                alert(err.message);
+              } finally {
+                setIsAILoading(false);
+              }
+            }}
+          >
+            <Sparkles size={16} className={isAILoading ? 'spinning' : ''} /> 
+            {isAILoading ? 'Analyzing...' : 'AI Insights'}
+          </button>
+
 
           <div className="workspace-meta">
             {sheetNames.length > 1 && (
@@ -600,6 +632,15 @@ const MiniBI = () => {
           columns={columns} 
           config={reportConfig} 
           onConfigChange={setReportConfig} 
+          aiInsights={aiInsights}
+        />
+      )}
+      
+      {showAIPanel && (
+        <AIInsightPanel 
+          insights={aiInsights} 
+          onClose={() => setShowAIPanel(false)} 
+          isPremium={true} 
         />
       )}
     </div>
