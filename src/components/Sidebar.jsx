@@ -1,8 +1,7 @@
-// src/components/Sidebar.jsx
-import { Calculator, HardHat, Code, TrendingUp, Lock, Database, LogOut } from 'lucide-react';
+import { Calculator, HardHat, Code, TrendingUp, Lock, Database, LogOut, X } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
-const Sidebar = ({ activeMode, setActiveMode, isPremium, onPremiumClick }) => {
+const Sidebar = ({ activeMode, setActiveMode, isPremium, onPremiumClick, isOpen, onClose }) => {
   const { user, logout } = useAuth();
 
   const navItems = [
@@ -26,6 +25,9 @@ const Sidebar = ({ activeMode, setActiveMode, isPremium, onPremiumClick }) => {
       <div className="sidebar-header">
         <h2 className="brand-name">CalQube</h2>
         {isPremium && <span className="premium-badge-small">PRO</span>}
+        <button className="sidebar-close" onClick={onClose} aria-label="Close Menu">
+          <X size={20} />
+        </button>
       </div>
       <ul className="sidebar-nav">
         {navItems.map((item) => {

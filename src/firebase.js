@@ -4,13 +4,13 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBGb20H9JfxSfJ9f0Rqipadg2ppKrvq5ts",
-  authDomain: "saas-calculator-007.firebaseapp.com",
-  projectId: "saas-calculator-007",
-  storageBucket: "saas-calculator-007.firebasestorage.app",
-  messagingSenderId: "472451808353",
-  appId: "1:472451808353:web:6e0dc3795a6d614855be20",
-  measurementId: "G-3KH2MY9886"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 const app = initializeApp(firebaseConfig);

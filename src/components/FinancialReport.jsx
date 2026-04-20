@@ -7,7 +7,7 @@ import jsPDF from 'jspdf';
 
 const COLORS = ['#3b82f6', '#6366f1', '#8b5cf6', '#0ea5e9', '#14b8a6', '#10b981'];
 
-const FinancialReport = ({ data, columns, config, onConfigChange, aiInsights }) => {
+const FinancialReport = ({ data, columns, config, onConfigChange }) => {
   const reportRef = useRef(null);
   const [categoryCol, setCategoryCol] = useState(config?.categoryCol || '');
   const [periodCol, setPeriodCol] = useState(config?.periodCol || '');
@@ -402,39 +402,6 @@ const FinancialReport = ({ data, columns, config, onConfigChange, aiInsights }) 
           </div>
         </div>
 
-        {/* AI Executive Summary Block (Included in PDF) */}
-        {aiInsights && (
-          <div className="segment-block ai-summary-block" style={{ marginTop: '16px', border: '1px solid rgba(139, 92, 246, 0.2)' }}>
-            <div className="segment-header" style={{ background: 'linear-gradient(90deg, rgba(139, 92, 246, 0.1) 0%, transparent 100%)' }}>
-               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Sparkles size={16} style={{ color: '#8b5cf6' }} />
-                <span className="segment-title">AI Executive Analysis</span>
-               </div>
-            </div>
-            <div className="ai-report-content" style={{ padding: '24px', color: '#e2e8f0', fontSize: '14px', lineHeight: '1.6' }}>
-              {aiInsights.split('\n').map((line, i) => {
-                const content = line.trim();
-                if (!content) return <br key={i} />;
-                
-                // Bold handling
-                const parts = content.split(/(\*\*.*?\*\*)/g).map((part, j) => {
-                  if (part.startsWith('**') && part.endsWith('**')) {
-                    return <strong key={j} style={{ color: '#fff' }}>{part.substring(2, part.length - 2)}</strong>;
-                  }
-                  return part;
-                });
-
-                if (content.startsWith('* ') || content.startsWith('- ')) {
-                  return <div key={i} style={{ marginBottom: '8px', paddingLeft: '12px', borderLeft: '2px solid #8b5cf6' }}>{parts.slice(1)}</div>;
-                }
-                if (/^\d+\./.test(content)) {
-                  return <div key={i} style={{ fontWeight: 600, color: '#fff', marginTop: '16px', marginBottom: '8px', fontSize: '15px' }}>{parts}</div>;
-                }
-                return <p key={i} style={{ marginBottom: '12px' }}>{parts}</p>;
-              })}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

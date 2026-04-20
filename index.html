@@ -2,12 +2,29 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" href="/pwa-192x192.png" />
+    <link rel="apple-touch-icon" href="/pwa-512x512.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CalQube - Enterprise Data BI</title>
+    
+    <title>CalQube - Enterprise Data BI & Technical Calculators</title>
+    <meta name="description" content="Elite technical calculators and AI-powered data visualization for financial, construction, and developer workflows. CalQube is your premium BI dashboard." />
+    <meta name="theme-color" content="#090c13" />
+    
+    <!-- PWA & Apple Support -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="CalQube" />
+    
+    <!-- Open Graph / SEO -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="CalQube - Enterprise Data BI" />
+    <meta property="og:description" content="AI-powered insights and elite calculation tools for professionals." />
+    <meta property="og:image" content="/pwa-512x512.png" />
+    
+    <meta name="version" content="1.2.1" />
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <style>
-      body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #090c13; }
+      body, html { margin: 0; padding: 0; background: #090c13; color: white; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
       .bot-audit-footer {
         position: fixed;
         bottom: 0;
