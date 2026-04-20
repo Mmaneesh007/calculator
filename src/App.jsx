@@ -8,6 +8,7 @@ import Sidebar from './components/Sidebar';
 import PaywallModal from './components/PaywallModal';
 import LegalPortal from './components/LegalPortal';
 import ErrorBoundary from './components/ErrorBoundary';
+import LandingPage from './components/LandingPage';
 
 // Lazy load heavy components for performance
 const Calculator = lazy(() => import('./components/Calculator'));
@@ -22,6 +23,7 @@ function AppContent() {
   const [activeMode, setActiveMode] = useState('basic');
   const [showLegal, setShowLegal] = useState(null); // 'privacy' | 'terms' | null
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
 
   // Hash router for legal pages
   useEffect(() => {
@@ -59,7 +61,11 @@ function AppContent() {
   if (!user) {
     return (
       <>
-        <AuthPage />
+        {showAuth ? (
+          <AuthPage onBack={() => setShowAuth(false)} />
+        ) : (
+          <LandingPage onGetStarted={() => setShowAuth(true)} />
+        )}
         {showLegal && <LegalPortal initialTab={showLegal} onClose={closeLegal} />}
       </>
     );

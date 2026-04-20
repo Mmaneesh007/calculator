@@ -1,9 +1,9 @@
 // src/components/AuthPage.jsx
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { LogIn, Mail, Lock, User, ArrowRight } from 'lucide-react';
+import { LogIn, Mail, Lock, User, ArrowRight, ArrowLeft } from 'lucide-react';
 
-const AuthPage = () => {
+const AuthPage = ({ onBack }) => {
   const { loginWithGoogle, loginWithEmail, signupWithEmail } = useAuth();
   const [isSignup, setIsSignup] = useState(false);
   const [email, setEmail] = useState('');
@@ -49,9 +49,16 @@ const AuthPage = () => {
   return (
     <div className="auth-page">
       <div className="auth-card">
+        {/* Back Button */}
+        {onBack && (
+          <button className="auth-back-btn" onClick={onBack}>
+            <ArrowLeft size={18} /> Back
+          </button>
+        )}
+
         {/* Branding */}
         <div className="auth-header">
-          <h1 className="auth-brand">SaaS Calc</h1>
+          <h1 className="auth-brand">CalQube</h1>
           <span className="premium-badge-small">PRO</span>
         </div>
         <p className="auth-subtitle">
